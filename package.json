@@ -13,6 +13,7 @@
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
     "test": "jest",
+    "test:emulator": "tsx tests/run-tests.ts",
     "lint": "eslint src/**/*.ts"
   },
   "repository": {
