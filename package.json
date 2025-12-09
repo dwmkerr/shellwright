@@ -40,6 +40,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.24.3",
+    "@xterm/headless": "^5.5.0",
     "express": "^5.2.1",
     "node-pty": "^1.0.0",
     "strip-ansi": "^7.1.2",

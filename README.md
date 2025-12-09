@@ -37,6 +37,10 @@ cp .env.sample .env
 python k9s-demo.py
 ```
 
+## TODO
+
+- Set screen size tool
+
 ## License
 
 MIT

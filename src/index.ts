@@ -9,6 +9,8 @@ import { z } from "zod";
 import * as pty from "node-pty";
 import * as fs from "fs/promises";
 import * as path from "path";
+import xterm from "@xterm/headless";
+const { Terminal } = xterm;
 
 const PORT = parseInt(process.env.PORT || "7498", 10);
 const BACKGROUND = process.argv.includes("--background") || process.argv.includes("-b");
@@ -31,6 +33,21 @@ function getPtyEnv(): { [key: string]: string } {
   return env;
 }
 
+// Render terminal screen as text grid (cols x rows)
+function renderScreen(terminal: InstanceType<typeof Terminal>, cols: number, rows: number): string {
+  const buffer = terminal.buffer.active;
+  const lines: string[] = [];
+  for (let i = 0; i < rows; i++) {
+    const line = buffer.getLine(i);
+    if (line) {
+      lines.push(line.translateToString(true).padEnd(cols));
+    } else {
+      lines.push("".padEnd(cols));
+    }
+  }
+  return lines.join("\n");
+}
+
 // Basic ANSI stripping (incomplete - see 04-findings.md for why this is insufficient)
 function stripAnsi(str: string): string {
   return str
@@ -48,6 +65,7 @@ interface Session {
   cols: number;
   rows: number;
   buffer: string[];
+  terminal: InstanceType<typeof Terminal>;
 }
 
 const sessions = new Map<string, Session>();
@@ -81,12 +99,19 @@ const createServer = () => {
         env: getPtyEnv(),
       });
 
+      const terminal = new Terminal({
+        cols: termCols,
+        rows: termRows,
+        allowProposedApi: true,
+      });
+
       const session: Session = {
         id,
         pty: ptyProcess,
         cols: termCols,
         rows: termRows,
         buffer: [],
+        terminal,
       };
 
       ptyProcess.onData((data) => {
@@ -94,6 +119,7 @@ const createServer = () => {
         if (session.buffer.length > 1000) {
           session.buffer.shift();
         }
+        terminal.write(data);
       });
 
       sessions.set(id, session);
@@ -163,8 +189,29 @@ const createServer = () => {
   );
 
   server.tool(
+    "shell_snapshot",
+    "Get the current terminal screen as rendered text grid (like Playwright browser_snapshot)",
+    {
+      session_id: z.string().describe("Session ID"),
+    },
+    async ({ session_id }) => {
+      const session = sessions.get(session_id);
+      if (!session) {
+        throw new Error(`Session not found: ${session_id}`);
+      }
+
+      const screen = renderScreen(session.terminal, session.cols, session.rows);
+      console.log(`[shellwright] Snapshot ${session.cols}x${session.rows} from ${session_id}`);
+
+      return {
+        content: [{ type: "text" as const, text: screen }],
+      };
+    }
+  );
+
+  server.tool(
     "shell_screenshot",
-    "Capture terminal state to files (raw ANSI + rendered ASCII)",
+    "Capture terminal state to files (raw ANSI + rendered screen)",
     {
       session_id: z.string().describe("Session ID"),
       output: z.string().describe("Output file path (without extension)"),
@@ -176,11 +223,11 @@ const createServer = () => {
       }
 
       const rawContent = session.buffer.join("");
-      const strippedContent = stripAnsi(rawContent);
+      const renderedScreen = renderScreen(session.terminal, session.cols, session.rows);
 
       await fs.mkdir(path.dirname(output), { recursive: true });
       await fs.writeFile(output + ".ansi", rawContent);
-      await fs.writeFile(output + ".txt", strippedContent);
+      await fs.writeFile(output + ".txt", renderedScreen);
 
       console.log(`[shellwright] Screenshot saved: ${output}.txt and ${output}.ansi`);
 
@@ -188,7 +235,7 @@ const createServer = () => {
         content: [{ type: "text" as const, text: JSON.stringify({
           txt: output + ".txt",
           ansi: output + ".ansi",
-          preview: strippedContent.slice(-2000)
+          preview: renderedScreen.slice(0, 2000)
         }) }],
       };
     }

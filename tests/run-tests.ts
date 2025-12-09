@@ -1,12 +1,14 @@
 /**
  * Terminal Emulator Test Runner
  *
- * Reads .cast files, processes through terminal emulator,
+ * Reads .cast files, processes through @xterm/headless,
  * compares output against expected.txt
  */
 
 import { readFileSync, readdirSync, statSync } from "fs";
 import { join } from "path";
+import xterm from "@xterm/headless";
+const { Terminal } = xterm;
 
 interface CastHeader {
   version: number;
@@ -51,7 +53,7 @@ function loadTestCases(testsDir: string): TestCase[] {
         input: parseCast(inputContent),
         expected: expectedContent,
       });
-    } catch (err) {
+    } catch {
       console.error(`Skipping ${entry}: missing input.cast or expected.txt`);
     }
   }
@@ -59,37 +61,41 @@ function loadTestCases(testsDir: string): TestCase[] {
   return cases;
 }
 
-function renderScreen(
+async function renderScreen(
   header: CastHeader,
   events: CastEvent[]
-): string {
-  // TODO: Replace with actual terminal emulator (avt WASM)
-  // For now, just concatenate output events and strip \r
-  const width = header.width;
-  const height = header.height;
+): Promise<string> {
+  const { width, height } = header;
 
-  // Initialize screen buffer
-  const screen: string[] = Array(height).fill("".padEnd(width));
+  const terminal = new Terminal({
+    cols: width,
+    rows: height,
+    allowProposedApi: true,
+  });
 
-  // Simple naive rendering - just append output
-  // Real implementation needs cursor tracking, escape sequence parsing
-  let output = "";
+  // Feed all events to terminal
   for (const [_time, type, data] of events) {
     if (type === "o") {
-      output += data;
+      await new Promise<void>((resolve) => terminal.write(data, resolve));
     }
   }
 
-  // Split by lines and place into screen (naive)
-  const lines = output.replace(/\r\n/g, "\n").replace(/\r/g, "").split("\n");
-  for (let i = 0; i < Math.min(lines.length, height); i++) {
-    screen[i] = lines[i].padEnd(width).slice(0, width);
+  // Render screen
+  const buffer = terminal.buffer.active;
+  const lines: string[] = [];
+  for (let i = 0; i < height; i++) {
+    const line = buffer.getLine(i);
+    if (line) {
+      lines.push(line.translateToString(true).padEnd(width));
+    } else {
+      lines.push("".padEnd(width));
+    }
   }
 
-  return screen.join("\n");
+  return lines.join("\n");
 }
 
-function runTests() {
+async function runTests() {
   const testsDir = new URL(".", import.meta.url).pathname;
   const testCases = loadTestCases(testsDir);
 
@@ -99,7 +105,7 @@ function runTests() {
   let failed = 0;
 
   for (const tc of testCases) {
-    const actual = renderScreen(tc.input.header, tc.input.events);
+    const actual = await renderScreen(tc.input.header, tc.input.events);
 
     if (actual === tc.expected) {
       console.log(`✓ ${tc.name}`);

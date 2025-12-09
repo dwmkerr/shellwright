@@ -1,0 +1,4 @@
+{"version": 2, "width": 80, "height": 24, "timestamp": 1733644800}
+[0.0, "o", "first line\r\n"]
+[0.1, "o", "second line\r\n"]
+[0.2, "o", "\u001b[Hoverwrite"]
