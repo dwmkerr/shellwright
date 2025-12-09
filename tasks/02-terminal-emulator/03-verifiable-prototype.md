@@ -50,6 +50,37 @@ npm run test:emulator
 - Much simpler than compiling Rust avt to WASM
 
 ### Next Steps
-1. Test with real TUI application (k9s)
+1. Test with real TUI application (vim)
 2. Verify shell_snapshot returns correct screen state via MCP
 3. Consider image rendering (PNG export)
+
+---
+
+## Checkpoint 3: 2025-12-09 - Vim Test
+
+### Goal
+Test terminal emulator with real vim session (insert mode, new line, exit).
+
+### Verification
+```bash
+npm run test:emulator
+```
+
+### Results
+- Recorded actual vim session using node-pty
+- Terminal emulator correctly renders vim screen:
+  - Text lines ("Hello vim!", "Second line")
+  - Vim's `~` markers for empty lines
+  - Status bar with cursor position
+  - Command line with `:q!`
+- All 3 tests pass: 01-echo, 02-cursor, 03-vim
+
+### Feedback
+- @xterm/headless handles vim's complex escape sequences
+- Recording real sessions produces accurate test fixtures
+- Alternate screen buffer handled correctly
+
+### Next Steps
+1. Test with k9s or other TUI app
+2. Verify MCP server integration end-to-end
+3. Consider image rendering (PNG export via agg)
