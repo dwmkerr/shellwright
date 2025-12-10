@@ -36,10 +36,6 @@ async def run():
         print("Error: pip install mcp", file=sys.stderr)
         sys.exit(1)
 
-    print("Vim Example")
-    print(f"Server: {SERVER_URL}")
-    print(f"Screenshots: {OUTPUT_DIR}\n")
-
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     try:
@@ -48,7 +44,6 @@ async def run():
                 await session.initialize()
 
                 # Start vim with a temp file
-                print("[1] Starting vim...")
                 result = await call_tool(session, "shell_start", {
                     "command": "vim",
                     "args": ["/tmp/shellwright-vim-test.txt"],
@@ -65,14 +60,13 @@ async def run():
                 })
 
                 # Screenshot: vim opened
-                print("[2] Screenshot: vim opened...")
                 await call_tool(session, "shell_screenshot", {
                     "session_id": session_id,
                     "output": f"{OUTPUT_DIR}/step-01-vim-opened",
                 })
+                print(f"{OUTPUT_DIR}/step-01-vim-opened.png")
 
                 # Enter insert mode and type text
-                print("[3] Entering insert mode and typing...")
                 await call_tool(session, "shell_send", {
                     "session_id": session_id,
                     "input": "iHello from Shellwright!\n\nThis text was typed by an AI agent.",
@@ -80,14 +74,13 @@ async def run():
                 })
 
                 # Screenshot: text entered
-                print("[4] Screenshot: text entered...")
                 await call_tool(session, "shell_screenshot", {
                     "session_id": session_id,
                     "output": f"{OUTPUT_DIR}/step-02-text-entered",
                 })
+                print(f"{OUTPUT_DIR}/step-02-text-entered.png")
 
                 # Exit insert mode, save and quit
-                print("[5] Saving and exiting...")
                 await call_tool(session, "shell_send", {
                     "session_id": session_id,
                     "input": "\x1b:wq\r",  # Escape, then :wq Enter
@@ -96,7 +89,6 @@ async def run():
 
                 # Stop session
                 await call_tool(session, "shell_stop", {"session_id": session_id})
-                print(f"\nDone. Screenshots in: {OUTPUT_DIR}")
 
     except Exception as e:
         if "Connect" in str(type(e).__name__) or "connection" in str(e).lower():

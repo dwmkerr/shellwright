@@ -36,10 +36,6 @@ async def run():
         print("Error: pip install mcp", file=sys.stderr)
         sys.exit(1)
 
-    print("K9s Example")
-    print(f"Server: {SERVER_URL}")
-    print(f"Screenshots: {OUTPUT_DIR}\n")
-
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     try:
@@ -48,7 +44,6 @@ async def run():
                 await session.initialize()
 
                 # Start k9s
-                print("[1] Starting k9s...")
                 result = await call_tool(session, "shell_start", {
                     "command": "k9s",
                     "cols": 120,
@@ -64,14 +59,13 @@ async def run():
                 })
 
                 # Screenshot: initial view
-                print("[2] Screenshot: initial view...")
                 await call_tool(session, "shell_screenshot", {
                     "session_id": session_id,
                     "output": f"{OUTPUT_DIR}/step-01-k9s",
                 })
+                print(f"{OUTPUT_DIR}/step-01-k9s.png")
 
                 # Navigate to deployments
-                print("[3] Navigating to deployments...")
                 await call_tool(session, "shell_send", {
                     "session_id": session_id,
                     "input": ":deploy\r",
@@ -79,14 +73,13 @@ async def run():
                 })
 
                 # Screenshot: deployments view
-                print("[4] Screenshot: deployments...")
                 await call_tool(session, "shell_screenshot", {
                     "session_id": session_id,
                     "output": f"{OUTPUT_DIR}/step-02-deployments",
                 })
+                print(f"{OUTPUT_DIR}/step-02-deployments.png")
 
                 # Exit k9s
-                print("[5] Exiting k9s...")
                 await call_tool(session, "shell_send", {
                     "session_id": session_id,
                     "input": ":q\r",
@@ -95,7 +88,6 @@ async def run():
 
                 # Stop session
                 await call_tool(session, "shell_stop", {"session_id": session_id})
-                print(f"\nDone. Screenshots in: {OUTPUT_DIR}")
 
     except Exception as e:
         if "Connect" in str(type(e).__name__) or "connection" in str(e).lower():

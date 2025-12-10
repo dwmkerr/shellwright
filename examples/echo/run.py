@@ -35,9 +35,6 @@ async def run():
         print("Error: pip install mcp", file=sys.stderr)
         sys.exit(1)
 
-    print("Echo Example")
-    print(f"Server: {SERVER_URL}\n")
-
     try:
         async with streamablehttp_client(f"{SERVER_URL}/mcp") as (read, write, _):
             async with ClientSession(read, write) as session:
@@ -46,7 +43,6 @@ async def run():
                 # Start bash
                 result = await call_tool(session, "shell_start", {"command": "bash"})
                 session_id = json.loads(result)["session_id"]
-                print(f"Started bash session: {session_id}")
 
                 # Run echo command
                 await call_tool(session, "shell_send", {
@@ -55,17 +51,14 @@ async def run():
                     "delay_ms": 500,
                 })
 
-                # Get snapshot
+                # Get snapshot and print it
                 snapshot = await call_tool(session, "shell_snapshot", {
                     "session_id": session_id,
                 })
-                print("\n--- Terminal Snapshot ---")
                 print(snapshot)
-                print("-------------------------\n")
 
                 # Stop session
                 await call_tool(session, "shell_stop", {"session_id": session_id})
-                print("Session stopped.")
 
     except Exception as e:
         if "Connect" in str(type(e).__name__) or "connection" in str(e).lower():
