@@ -1,0 +1,33 @@
+version: v2beta1
+name: shellwright
+
+vars:
+  IMAGE: ghcr.io/dwmkerr/shellwright-mcp-server
+
+images:
+  shellwright:
+    image: ${IMAGE}
+    dockerfile: ./Dockerfile
+    context: ./
+
+deployments:
+  shellwright:
+    helm:
+      chart:
+        name: ./chart
+      values:
+        image:
+          repository: ${IMAGE}
+        ark:
+          enabled: true
+
+dev:
+  shellwright:
+    imageSelector: ${IMAGE}
+    devImage: node:20
+    command: ["npm", "run", "dev"]
+    sync:
+      - path: ./src:/app/src
+      - path: ./package.json:/app/package.json
+    ports:
+      - port: "7498:7498"

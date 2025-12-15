@@ -1,0 +1,18 @@
+{{- if .Values.ark.enabled }}
+apiVersion: ark.mckinsey.com/v1alpha1
+kind: MCPServer
+metadata:
+  name: {{ include "shellwright.fullname" . }}
+  labels:
+    {{- include "shellwright.labels" . | nindent 4 }}
+spec:
+  address:
+    valueFrom:
+      serviceRef:
+        name: {{ include "shellwright.fullname" . }}
+        port: http
+  description: {{ .Values.ark.description }}
+  transport: http
+  pollInterval: {{ .Values.ark.pollInterval }}
+  timeout: {{ .Values.ark.timeout }}
+{{- end }}

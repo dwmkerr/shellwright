@@ -24,3 +24,19 @@ lint: # Run linter.
 .PHONY: clean
 clean: # Remove build artifacts.
 	rm -rf dist node_modules
+
+.PHONY: docker-build
+docker-build: # Build the Docker image.
+	docker build -t shellwright .
+
+.PHONY: docker-run
+docker-run: docker-build # Build and run the Docker container.
+	docker run --rm -it -p 7498:7498 shellwright
+
+.PHONY: helm-lint
+helm-lint: # Lint the Helm chart.
+	helm lint chart
+
+.PHONY: helm-template
+helm-template: # Render the Helm chart templates.
+	helm template shellwright chart

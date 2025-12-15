@@ -14,6 +14,7 @@ const { Terminal } = xterm;
 import { bufferToSvg } from "./lib/buffer-to-svg.js";
 import { Resvg } from "@resvg/resvg-js";
 
+// Port 7498 spells SWRT (Shellwright) on a dialpad
 const PORT = parseInt(process.env.PORT || "7498", 10);
 const BACKGROUND = process.argv.includes("--background") || process.argv.includes("-b");
 

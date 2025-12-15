@@ -1,0 +1,29 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/dwmkerr/shellwright-mcp-server
+  pullPolicy: IfNotPresent
+  tag: ""  # Defaults to appVersion
+
+service:
+  type: ClusterIP
+  port: 7498
+
+resources: {}
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Ark MCP Server integration
+ark:
+  enabled: false
+  description: "Shellwright - Terminal automation MCP server for AI agents"
+  pollInterval: 1m
+  timeout: 30s
