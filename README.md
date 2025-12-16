@@ -1,14 +1,14 @@
 <p align="center">
   <h2 align="center"><code>🖥️ shellwright</code></h2>
   <h3 align="center">Playwright for the shell. AI-driven terminal automation, screenshots and video recording.</h3>
-  <h5 align="center">Finally, your AI agents can <a href="TODO" target="_blank">close Vim</a>.</h5>
+  <h5 align="center">Finally, your AI agents can <a href="https://stackoverflow.com/questions/11828270/how-do-i-exit-vim" target="_blank">close Vim</a>.</h5>
   <p align="center">
     <img src="./docs/videos/closing-vim-example.gif" alt="Shellwright Demo" style="max-width: 100%;">
   </p>
   <p align="center">
     <a href="#quickstart">Quickstart</a> |
     <a href="#examples">Examples</a> |
-    <a href="#tools">Tools</a> |
+    <a href="#mcp-tools">MCP Tools</a> |
     <a href="#configuration">Configuration</a>
   </p>
   <p align="center">
@@ -18,6 +18,15 @@
 </p>
 
 ## Quickstart
+
+Configure your LLM, IDE or whatever to use the Shellwright MCP server:
+
+```json
+{
+TODO what tis the npx thing we use to configure an MCP sever?
+}
+
+**Running Locally*
 
 Run the MCP server:
 
@@ -45,7 +54,7 @@ npx @modelcontextprotocol/inspector
 Run the [`demo.py`](./demo/demo.py) program to chat to an agent that has the Shellwright tool:
 
 ```bash
-# Optionally setup your .env
+# Optionally setup your .env to specify configuration.
 # cp ./demo/.env.sample .env && vi .env
 
 # Install requirements and run the agent.
@@ -54,6 +63,10 @@ python ./demo/demo.py
 
 # Output:
 # User (enter message): Show me what the htop tool looks like showing me my resources.
+
+# ...or provide a message directly.
+python ./demo/demo.py -- "Run a shell command to show me the names \
+of the folders in this directory and take a screenshot and give me its path"
 ```
 
 You will see logs from the MCP server and the demo agent:
@@ -64,13 +77,11 @@ Screenshots and videos by default will be written to `./output`.
 
 ## Examples
 
-Finally, your agents can be smart enough to [close `vim`](https://stackoverflow.com/questions/11828270/how-do-i-exit-vim):
+Have fun with some prompts:
 
 > Open Vim. Write a message saying how to close Vim. Close Vim. Give me a screenshot of each step and a GIF recording.
 
-![Screenshot of the MCP Server and Demo Application Running](./docs/images/npm-dev-and-demo-screenshot.png)
-
-## Tools
+## MCP Tools
 
 | Tool | Description |
 |------|-------------|
