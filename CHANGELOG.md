@@ -1,0 +1,26 @@
+# Changelog
+
+## [0.1.0](https://github.com/dwmkerr/shellwright-mcp-server/compare/v0.1.0...v0.1.0) (2025-12-16)
+
+
+### Features
+
+* add custom SVG/PNG generation from xterm buffer ([33433d1](https://github.com/dwmkerr/shellwright-mcp-server/commit/33433d1810ed1ae86fb0e68120be018280c9fb30))
+* add demo.py for natural language terminal control ([5082d0f](https://github.com/dwmkerr/shellwright-mcp-server/commit/5082d0fcd65a3c1802aee27e69601457f3979766))
+* integrate @xterm/headless terminal emulator ([6aeea7b](https://github.com/dwmkerr/shellwright-mcp-server/commit/6aeea7bad48b4a2071afcfa6d1a61312b1ca9f3c))
+* integrate xterm.js terminal emulator with PNG screenshots ([b84c580](https://github.com/dwmkerr/shellwright-mcp-server/commit/b84c5803252e136135216188e79267a9eaebcc6f))
+* POC MCP server with PTY management ([8cc8704](https://github.com/dwmkerr/shellwright-mcp-server/commit/8cc870414e20321080daeab2e5963b99e8a89c12))
+* video recording ([#3](https://github.com/dwmkerr/shellwright-mcp-server/issues/3)) ([ef4a2ca](https://github.com/dwmkerr/shellwright-mcp-server/commit/ef4a2ca12e5e73066ff4c958143a5b282098902c))
+
+
+### Bug Fixes
+
+* add security context and non-root user ([dd10ba8](https://github.com/dwmkerr/shellwright-mcp-server/commit/dd10ba84d684d6d366d91310f4102602807f5864))
+* echo example takes screenshot like other examples ([34ceca0](https://github.com/dwmkerr/shellwright-mcp-server/commit/34ceca0461b0c5dbcd4cc22af6c4801e83bfa6da))
+* simplify example output to just screenshot paths ([469dbf6](https://github.com/dwmkerr/shellwright-mcp-server/commit/469dbf699c301b74e26eeb9abb32a3a755f724cb))
+* use screenshots folder for example output ([32da81a](https://github.com/dwmkerr/shellwright-mcp-server/commit/32da81a5ccad2fb1c34af9f00e11c9b5fec4dc05))
+
+
+### Miscellaneous Chores
+
+* release 0.1.0 ([af8a607](https://github.com/dwmkerr/shellwright-mcp-server/commit/af8a6071ce6bbad7852391f7e93c27cbe3ad1a6b))
