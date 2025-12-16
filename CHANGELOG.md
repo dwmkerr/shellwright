@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.1](https://github.com/dwmkerr/shellwright-mcp-server/compare/v0.1.0...v0.1.1) (2025-12-16)
+
+
+### Bug Fixes
+
+* skip prepare script during docker build ([#5](https://github.com/dwmkerr/shellwright-mcp-server/issues/5)) ([e030dd9](https://github.com/dwmkerr/shellwright-mcp-server/commit/e030dd9b8dbfbee29cdf45c4d65bc5959d59fa71))
+* update typescript-eslint to address vulnerabilities ([#7](https://github.com/dwmkerr/shellwright-mcp-server/issues/7)) ([c188935](https://github.com/dwmkerr/shellwright-mcp-server/commit/c1889353d78eec6edbd43b703e7a00399839fe09))
+
 ## [0.1.0](https://github.com/dwmkerr/shellwright-mcp-server/compare/v0.1.0...v0.1.0) (2025-12-16)
 
 
