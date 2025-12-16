@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/dwmkerr/shellwright-mcp-server/compare/v0.1.1...v0.1.2) (2025-12-16)
+
+
+### Features
+
+* basic theme support ([#8](https://github.com/dwmkerr/shellwright-mcp-server/issues/8)) ([4236c6f](https://github.com/dwmkerr/shellwright-mcp-server/commit/4236c6f050d47d036747f74039c5f594c4c23f6b))
+
 ## [0.1.1](https://github.com/dwmkerr/shellwright-mcp-server/compare/v0.1.0...v0.1.1) (2025-12-16)
 
 

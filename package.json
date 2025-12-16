@@ -1,6 +1,6 @@
 {
   "name": "@dwmkerr/shellwright-mcp-server",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "description": "Playwright for the shell - MCP server for terminal recording and automation",
   "main": "dist/index.js",

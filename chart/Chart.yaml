@@ -2,5 +2,5 @@ apiVersion: v2
 name: shellwright
 description: Shellwright MCP Server - Terminal automation for AI agents
 type: application
-version: 0.1.1
-appVersion: 0.1.1
+version: 0.1.2
+appVersion: 0.1.2
