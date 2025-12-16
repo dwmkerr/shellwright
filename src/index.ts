@@ -14,11 +14,35 @@ const { Terminal } = xterm;
 import { bufferToSvg } from "./lib/buffer-to-svg.js";
 import { Resvg } from "@resvg/resvg-js";
 import { renderGif } from "./lib/render-gif.js";
+import { Command } from "commander";
+import { getTheme, themes, DEFAULT_THEME, Theme } from "./lib/themes.js";
 
-// Port 7498 spells SWRT (Shellwright) on a dialpad
-const PORT = parseInt(process.env.PORT || "7498", 10);
-const TEMP_DIR = process.env.SHELLWRIGHT_TEMP_DIR || "/tmp/shellwright";
-const BACKGROUND = process.argv.includes("--background") || process.argv.includes("-b");
+const program = new Command();
+program
+  .name("shellwright")
+  .description("MCP server for terminal automation, screenshots, and video recording")
+  .option("-p, --port <number>", "Server port", process.env.PORT || "7498")
+  .option("-t, --theme <name>", "Color theme for screenshots/recordings", process.env.THEME || DEFAULT_THEME)
+  .option("--temp-dir <path>", "Directory for recording frames", process.env.TEMP_DIR || "/tmp/shellwright")
+  .option("-b, --background", "Run in background mode")
+  .parse();
+
+const opts = program.opts();
+
+const PORT = parseInt(opts.port, 10);
+const TEMP_DIR = opts.tempDir;
+const BACKGROUND = opts.background;
+
+let currentTheme: Theme;
+try {
+  currentTheme = getTheme(opts.theme);
+  console.log(`[shellwright] Theme: ${currentTheme.name}`);
+  console.log(`[shellwright] Temp directory: ${TEMP_DIR}`);
+} catch (err) {
+  console.error(`[shellwright] ${(err as Error).message}`);
+  console.error(`[shellwright] Available themes: ${Object.keys(themes).join(", ")}`);
+  process.exit(1);
+}
 
 // Build a clean env for PTY sessions - removes vars that could cause terminal interference
 function getPtyEnv(): { [key: string]: string } {
@@ -262,7 +286,7 @@ const createServer = (transport: StreamableHTTPServerTransport) => {
       await fs.mkdir(screenshotDir, { recursive: true });
 
       // Generate PNG from xterm buffer
-      const svg = bufferToSvg(session.terminal, session.cols, session.rows);
+      const svg = bufferToSvg(session.terminal, session.cols, session.rows, { theme: currentTheme });
       const resvg = new Resvg(svg);
       const png = resvg.render().asPng();
 
@@ -338,7 +362,7 @@ const createServer = (transport: StreamableHTTPServerTransport) => {
           if (!session.recording) return;
 
           const frameNum = session.recording.frameCount++;
-          const svg = bufferToSvg(session.terminal, session.cols, session.rows);
+          const svg = bufferToSvg(session.terminal, session.cols, session.rows, { theme: currentTheme });
           const png = new Resvg(svg).render().asPng();
           const framePath = path.join(framesDir, `frame${String(frameNum).padStart(6, "0")}.png`);
           await fs.writeFile(framePath, png);
@@ -496,7 +520,6 @@ app.delete("/mcp", async (req: Request, res: Response) => {
 
 app.listen(PORT, () => {
   console.log(`[shellwright] MCP server running at http://localhost:${PORT}/mcp`);
-  console.log(`[shellwright] Temp directory: ${TEMP_DIR}`);
 });
 
 process.on("SIGINT", async () => {

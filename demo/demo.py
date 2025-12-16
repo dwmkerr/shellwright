@@ -186,6 +186,7 @@ Use descriptive names for screenshots and recordings.""",
                     message = response.choices[0].message
 
                     if not message.tool_calls:
+                        print(f"\n{GREEN}output saved to:{RESET} {config['output_dir']}")
                         break
 
                     messages.append(message)

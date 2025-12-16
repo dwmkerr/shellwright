@@ -105,14 +105,14 @@ Have fun with some prompts:
 
 ## Configuration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `7498` | Server port ("SWRT" on a phone keypad) |
-| `SHELLWRIGHT_TEMP_DIR` | `/tmp/shellwright` | Directory for recording frames |
+| Variable | Parameter | Default | Description |
+|----------|-----------|---------|-------------|
+| `PORT` | `--port`, `-p` | `7498` | Server port ("SWRT" on a phone keypad) |
+| `THEME` | `--theme`, `-t` | `one-dark` | Color theme (`one-dark`, `one-light`, `dracula`, `solarized-dark`, `nord`) |
+| `TEMP_DIR` | `--temp-dir` | `/tmp/shellwright` | Directory for recording frames |
 
 ## TODO
 
-- Themes support
 - Video export (MP4/MOV) via ffmpeg
 - Set screen size tool
 - Better logging
