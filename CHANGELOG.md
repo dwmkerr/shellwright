@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.4](https://github.com/dwmkerr/shellwright/compare/v0.1.3...v0.1.4) (2025-12-17)
+
+
+### Features
+
+* font size and family ([#14](https://github.com/dwmkerr/shellwright/issues/14)) ([5be7276](https://github.com/dwmkerr/shellwright/commit/5be7276c2b6e19c8a2e3dd3ecc96e6af92b2a513))
+* return download_url for screenshots and recordings ([#19](https://github.com/dwmkerr/shellwright/issues/19)) ([2027c47](https://github.com/dwmkerr/shellwright/commit/2027c47b5b60785da48dfea8f4fa3d8e1268d7b4))
+
 ## [0.1.3](https://github.com/dwmkerr/shellwright/compare/v0.1.2...v0.1.3) (2025-12-17)
 
 
