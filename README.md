@@ -102,6 +102,12 @@ Open [`k9s`](https://k9scli.io/) and show [Ark](https://github.com/mckinsey/agen
 
 ![Screenshot: Examples - K9S Agents](./docs/examples/k9s-agents.gif)
 
+Use [`htop`](https://github.com/htop-dev/htop):
+
+> Open htop and show the most resource intensive process.
+
+![Screenshot: Examples - HTOP](./docs/examples/htop.gif)
+
 ## MCP Tools
 
 | Tool | Description |

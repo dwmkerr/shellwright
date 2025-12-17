@@ -291,7 +291,7 @@ const createServer = (transport: StreamableHTTPServerTransport) => {
         fs.writeFile(textPath, text),
       ]);
 
-      console.log(`[shellwright] Screenshot saved: ${baseName}.{png,svg,ansi,txt}`);
+      console.log(`[shellwright] Screenshot saved: ${screenshotDir}/${baseName}.{png,svg,ansi,txt}`);
 
       return {
         content: [{ type: "text" as const, text: JSON.stringify({
