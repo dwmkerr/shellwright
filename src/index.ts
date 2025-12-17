@@ -12,8 +12,16 @@ import * as path from "path";
 import xterm from "@xterm/headless";
 const { Terminal } = xterm;
 import { bufferToSvg } from "./lib/buffer-to-svg.js";
-import { Resvg } from "@resvg/resvg-js";
+import { bufferToAnsi, bufferToText } from "./lib/buffer-to-ansi.js";
+import { Resvg, ResvgRenderOptions } from "@resvg/resvg-js";
 import { renderGif } from "./lib/render-gif.js";
+
+// Use system fonts for proper text rendering (resvg ignores them by default).
+// Scale 2x for crisp output on retina displays.
+const resvgOptions: ResvgRenderOptions = {
+  font: { loadSystemFonts: true },
+  fitTo: { mode: "zoom", value: 2 },
+};
 import { Command } from "commander";
 import { getTheme, themes, DEFAULT_THEME, Theme } from "./lib/themes.js";
 
@@ -57,24 +65,10 @@ function getPtyEnv(): { [key: string]: string } {
   delete env.TMUX_PANE;
   delete env.STY;  // screen
   delete env.WINDOW;
-  // Set a clean TERM
+  // Set terminal type and color support
   env.TERM = "xterm-256color";
+  env.COLORTERM = "truecolor";
   return env;
-}
-
-// Render terminal screen as text grid (cols x rows)
-function renderScreen(terminal: InstanceType<typeof Terminal>, cols: number, rows: number): string {
-  const buffer = terminal.buffer.active;
-  const lines: string[] = [];
-  for (let i = 0; i < rows; i++) {
-    const line = buffer.getLine(i);
-    if (line) {
-      lines.push(line.translateToString(true).padEnd(cols));
-    } else {
-      lines.push("".padEnd(cols));
-    }
-  }
-  return lines.join("\n");
 }
 
 // Interpret escape sequences in input strings (e.g., \r → carriage return)
@@ -245,29 +239,8 @@ const createServer = (transport: StreamableHTTPServerTransport) => {
   );
 
   server.tool(
-    "shell_snapshot",
-    "Get the current terminal screen as rendered text grid (like Playwright browser_snapshot)",
-    {
-      session_id: z.string().describe("Session ID"),
-    },
-    async ({ session_id }) => {
-      const session = sessions.get(session_id);
-      if (!session) {
-        throw new Error(`Session not found: ${session_id}`);
-      }
-
-      const screen = renderScreen(session.terminal, session.cols, session.rows);
-      console.log(`[shellwright] Snapshot ${session.cols}x${session.rows} from ${session_id}`);
-
-      return {
-        content: [{ type: "text" as const, text: screen }],
-      };
-    }
-  );
-
-  server.tool(
     "shell_screenshot",
-    "Capture terminal screenshot and return as base64 PNG",
+    "Capture terminal screenshot as PNG, ANSI, and plain text",
     {
       session_id: z.string().describe("Session ID"),
       name: z.string().optional().describe("Screenshot name (default: screenshot_{timestamp})"),
@@ -278,25 +251,36 @@ const createServer = (transport: StreamableHTTPServerTransport) => {
         throw new Error(`Session not found: ${session_id}`);
       }
 
-      const filename = `${name || `screenshot_${Date.now()}`}.png`;
+      const baseName = name || `screenshot_${Date.now()}`;
       const sessionDir = getSessionDir(transport.sessionId, session_id);
       const screenshotDir = path.join(sessionDir, "screenshots");
-      const filePath = path.join(screenshotDir, filename);
 
       await fs.mkdir(screenshotDir, { recursive: true });
 
-      // Generate PNG from xterm buffer
+      // Generate all formats from xterm buffer
       const svg = bufferToSvg(session.terminal, session.cols, session.rows, { theme: currentTheme });
-      const resvg = new Resvg(svg);
-      const png = resvg.render().asPng();
+      const png = new Resvg(svg, resvgOptions).render().asPng();
+      const ansi = bufferToAnsi(session.terminal, session.cols, session.rows, { theme: currentTheme });
+      const text = bufferToText(session.terminal, session.cols, session.rows);
 
-      // Save locally for diagnostics
-      await fs.writeFile(filePath, png);
-      console.log(`[shellwright] Screenshot saved: ${filePath}`);
+      // Save all formats
+      const pngPath = path.join(screenshotDir, `${baseName}.png`);
+      const svgPath = path.join(screenshotDir, `${baseName}.svg`);
+      const ansiPath = path.join(screenshotDir, `${baseName}.ansi`);
+      const textPath = path.join(screenshotDir, `${baseName}.txt`);
+
+      await Promise.all([
+        fs.writeFile(pngPath, png),
+        fs.writeFile(svgPath, svg),
+        fs.writeFile(ansiPath, ansi),
+        fs.writeFile(textPath, text),
+      ]);
+
+      console.log(`[shellwright] Screenshot saved: ${baseName}.{png,svg,ansi,txt}`);
 
       return {
         content: [{ type: "text" as const, text: JSON.stringify({
-          filename,
+          filename: `${baseName}.png`,
           mimetype: "image/png",
           base64: png.toString("base64"),
         }) }],
@@ -363,7 +347,7 @@ const createServer = (transport: StreamableHTTPServerTransport) => {
 
           const frameNum = session.recording.frameCount++;
           const svg = bufferToSvg(session.terminal, session.cols, session.rows, { theme: currentTheme });
-          const png = new Resvg(svg).render().asPng();
+          const png = new Resvg(svg, resvgOptions).render().asPng();
           const framePath = path.join(framesDir, `frame${String(frameNum).padStart(6, "0")}.png`);
           await fs.writeFile(framePath, png);
         }, 1000 / recordingFps),

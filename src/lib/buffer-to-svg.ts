@@ -57,16 +57,15 @@ function escapeXml(str: string): string {
 }
 
 function colorToHex(colorCode: number, palette: string[], defaultColor: string): string {
-  if (colorCode === 0) {
+  if (colorCode <= 0) {
     return defaultColor;
   }
   if (colorCode >= 1 && colorCode <= 256) {
     return palette[colorCode - 1] || defaultColor;
   }
-  // RGB color (encoded as 0x1RRGGBB)
-  if (colorCode > 0x1000000) {
-    const rgb = colorCode & 0xffffff;
-    return `#${rgb.toString(16).padStart(6, "0")}`;
+  // RGB color - xterm.js returns raw RGB values > 256
+  if (colorCode > 256) {
+    return `#${colorCode.toString(16).padStart(6, "0")}`;
   }
   return defaultColor;
 }
@@ -117,9 +116,15 @@ export function bufferToSvg(
       const isBold = cell.isBold();
       const isItalic = cell.isItalic();
       const isUnderline = cell.isUnderline();
+      const isInverse = cell.isInverse();
 
-      const fg = colorToHex(fgCode, palette, theme.foreground);
-      const bg = colorToHex(bgCode, palette, "");
+      let fg = colorToHex(fgCode, palette, theme.foreground);
+      let bg = colorToHex(bgCode, palette, theme.background);
+
+      // Handle inverse/reverse video - swap fg and bg
+      if (isInverse) {
+        [fg, bg] = [bg, fg];
+      }
 
       const xPos = padding + x * charWidth;
       const yPos = padding + y * lineHeight + opts.fontSize;
