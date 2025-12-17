@@ -25,6 +25,11 @@ const resvgOptions: ResvgRenderOptions = {
 import { Command } from "commander";
 import { getTheme, themes, DEFAULT_THEME, Theme } from "./lib/themes.js";
 
+const DEFAULT_FONT_SIZE = 14;
+const DEFAULT_FONT_FAMILY = "Hack, Monaco, Courier, monospace";
+const DEFAULT_COLS = 120;
+const DEFAULT_ROWS = 40;
+
 const program = new Command();
 program
   .name("shellwright")
@@ -32,6 +37,10 @@ program
   .option("-p, --port <number>", "Server port", process.env.PORT || "7498")
   .option("-t, --theme <name>", "Color theme for screenshots/recordings", process.env.THEME || DEFAULT_THEME)
   .option("--temp-dir <path>", "Directory for recording frames", process.env.TEMP_DIR || "/tmp/shellwright")
+  .option("--font-size <number>", "Font size in pixels for screenshots/recordings", process.env.FONT_SIZE || String(DEFAULT_FONT_SIZE))
+  .option("--font-family <name>", "Font family for screenshots/recordings", process.env.FONT_FAMILY || DEFAULT_FONT_FAMILY)
+  .option("--cols <number>", "Default terminal columns", String(DEFAULT_COLS))
+  .option("--rows <number>", "Default terminal rows", String(DEFAULT_ROWS))
   .option("-b, --background", "Run in background mode")
   .parse();
 
@@ -40,11 +49,17 @@ const opts = program.opts();
 const PORT = parseInt(opts.port, 10);
 const TEMP_DIR = opts.tempDir;
 const BACKGROUND = opts.background;
+const FONT_SIZE = parseInt(opts.fontSize, 10);
+const FONT_FAMILY = opts.fontFamily;
+const COLS = parseInt(opts.cols, 10);
+const ROWS = parseInt(opts.rows, 10);
 
 let currentTheme: Theme;
 try {
   currentTheme = getTheme(opts.theme);
   console.log(`[shellwright] Theme: ${currentTheme.name}`);
+  console.log(`[shellwright] Font: ${FONT_FAMILY} @ ${FONT_SIZE}px`);
+  console.log(`[shellwright] Terminal: ${COLS}x${ROWS}`);
   console.log(`[shellwright] Temp directory: ${TEMP_DIR}`);
 } catch (err) {
   console.error(`[shellwright] ${(err as Error).message}`);
@@ -132,13 +147,13 @@ const createServer = (transport: StreamableHTTPServerTransport) => {
     {
       command: z.string().describe("Command to run (e.g., 'k9s', 'bash')"),
       args: z.array(z.string()).optional().describe("Command arguments"),
-      cols: z.number().optional().describe("Terminal columns (default: 120)"),
-      rows: z.number().optional().describe("Terminal rows (default: 40)"),
+      cols: z.number().optional().describe(`Terminal columns (default: ${COLS})`),
+      rows: z.number().optional().describe(`Terminal rows (default: ${ROWS})`),
     },
     async ({ command, args, cols, rows }) => {
       const id = `shell-session-${randomUUID().slice(0, 6)}`;
-      const termCols = cols || 120;
-      const termRows = rows || 40;
+      const termCols = cols || COLS;
+      const termRows = rows || ROWS;
 
       const ptyProcess = pty.spawn(command, args || [], {
         name: "xterm-256color",
@@ -258,7 +273,7 @@ const createServer = (transport: StreamableHTTPServerTransport) => {
       await fs.mkdir(screenshotDir, { recursive: true });
 
       // Generate all formats from xterm buffer
-      const svg = bufferToSvg(session.terminal, session.cols, session.rows, { theme: currentTheme });
+      const svg = bufferToSvg(session.terminal, session.cols, session.rows, { theme: currentTheme, fontSize: FONT_SIZE, fontFamily: FONT_FAMILY });
       const png = new Resvg(svg, resvgOptions).render().asPng();
       const ansi = bufferToAnsi(session.terminal, session.cols, session.rows, { theme: currentTheme });
       const text = bufferToText(session.terminal, session.cols, session.rows);
@@ -346,7 +361,7 @@ const createServer = (transport: StreamableHTTPServerTransport) => {
           if (!session.recording) return;
 
           const frameNum = session.recording.frameCount++;
-          const svg = bufferToSvg(session.terminal, session.cols, session.rows, { theme: currentTheme });
+          const svg = bufferToSvg(session.terminal, session.cols, session.rows, { theme: currentTheme, fontSize: FONT_SIZE, fontFamily: FONT_FAMILY });
           const png = new Resvg(svg, resvgOptions).render().asPng();
           const framePath = path.join(framesDir, `frame${String(frameNum).padStart(6, "0")}.png`);
           await fs.writeFile(framePath, png);

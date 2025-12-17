@@ -44,7 +44,7 @@ interface SvgOptions {
 
 const DEFAULT_OPTIONS = {
   fontSize: 14,
-  fontFamily: "SauceCodePro Nerd Font, Source Code Pro, Courier, monospace",
+  fontFamily: "Hack, Monaco, Courier, monospace",
 };
 
 function escapeXml(str: string): string {
