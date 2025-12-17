@@ -121,6 +121,8 @@ Open [`k9s`](https://k9scli.io/) and show [Ark](https://github.com/mckinsey/agen
 | `PORT` | `--port`, `-p` | `7498` | Server port ("SWRT" on a phone keypad) |
 | `THEME` | `--theme`, `-t` | `one-dark` | Color theme (`one-dark`, `one-light`, `dracula`, `solarized-dark`, `nord`) |
 | `TEMP_DIR` | `--temp-dir` | `/tmp/shellwright` | Directory for recording frames |
+| `FONT_SIZE` | `--font-size` | `14` | Font size in pixels for screenshots/recordings |
+| `FONT_FAMILY` | `--font-family` | `SauceCodePro Nerd Font, ...` | Font family for screenshots/recordings (use a font with bold variant for bold text support) |
 
 ## Troubleshooting
 
@@ -160,7 +162,6 @@ Ideas for the future.
 - Video export (MP4/MOV) via ffmpeg
 - Set screen size tool
 - Better logging, a bit like `hl`
-- Configurable font family options
 
 ## License
 

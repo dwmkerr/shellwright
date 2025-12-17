@@ -25,6 +25,9 @@ const resvgOptions: ResvgRenderOptions = {
 import { Command } from "commander";
 import { getTheme, themes, DEFAULT_THEME, Theme } from "./lib/themes.js";
 
+const DEFAULT_FONT_SIZE = 14;
+const DEFAULT_FONT_FAMILY = "Hack, Monaco, Courier, monospace";
+
 const program = new Command();
 program
   .name("shellwright")
@@ -32,6 +35,8 @@ program
   .option("-p, --port <number>", "Server port", process.env.PORT || "7498")
   .option("-t, --theme <name>", "Color theme for screenshots/recordings", process.env.THEME || DEFAULT_THEME)
   .option("--temp-dir <path>", "Directory for recording frames", process.env.TEMP_DIR || "/tmp/shellwright")
+  .option("--font-size <number>", "Font size in pixels for screenshots/recordings", process.env.FONT_SIZE || String(DEFAULT_FONT_SIZE))
+  .option("--font-family <name>", "Font family for screenshots/recordings", process.env.FONT_FAMILY || DEFAULT_FONT_FAMILY)
   .option("-b, --background", "Run in background mode")
   .parse();
 
@@ -40,11 +45,14 @@ const opts = program.opts();
 const PORT = parseInt(opts.port, 10);
 const TEMP_DIR = opts.tempDir;
 const BACKGROUND = opts.background;
+const FONT_SIZE = parseInt(opts.fontSize, 10);
+const FONT_FAMILY = opts.fontFamily;
 
 let currentTheme: Theme;
 try {
   currentTheme = getTheme(opts.theme);
   console.log(`[shellwright] Theme: ${currentTheme.name}`);
+  console.log(`[shellwright] Font: ${FONT_FAMILY} @ ${FONT_SIZE}px`);
   console.log(`[shellwright] Temp directory: ${TEMP_DIR}`);
 } catch (err) {
   console.error(`[shellwright] ${(err as Error).message}`);
@@ -258,7 +266,7 @@ const createServer = (transport: StreamableHTTPServerTransport) => {
       await fs.mkdir(screenshotDir, { recursive: true });
 
       // Generate all formats from xterm buffer
-      const svg = bufferToSvg(session.terminal, session.cols, session.rows, { theme: currentTheme });
+      const svg = bufferToSvg(session.terminal, session.cols, session.rows, { theme: currentTheme, fontSize: FONT_SIZE, fontFamily: FONT_FAMILY });
       const png = new Resvg(svg, resvgOptions).render().asPng();
       const ansi = bufferToAnsi(session.terminal, session.cols, session.rows, { theme: currentTheme });
       const text = bufferToText(session.terminal, session.cols, session.rows);
@@ -346,7 +354,7 @@ const createServer = (transport: StreamableHTTPServerTransport) => {
           if (!session.recording) return;
 
           const frameNum = session.recording.frameCount++;
-          const svg = bufferToSvg(session.terminal, session.cols, session.rows, { theme: currentTheme });
+          const svg = bufferToSvg(session.terminal, session.cols, session.rows, { theme: currentTheme, fontSize: FONT_SIZE, fontFamily: FONT_FAMILY });
           const png = new Resvg(svg, resvgOptions).render().asPng();
           const framePath = path.join(framesDir, `frame${String(frameNum).padStart(6, "0")}.png`);
           await fs.writeFile(framePath, png);
