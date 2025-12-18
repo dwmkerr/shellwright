@@ -112,20 +112,6 @@ Use [`htop`](https://github.com/htop-dev/htop):
 
 ![Screenshot: Examples - HTOP](./docs/examples/htop.gif)
 
-## MCP Tools
-
-| Tool | Description |
-|------|-------------|
-| `shell_start` | Start a new PTY session |
-| `shell_send` | Send input to a session |
-| `shell_read` | Read the terminal buffer |
-| `shell_screenshot` | Capture terminal as PNG. Returns `download_url` for curl |
-| `shell_record_start` | Start recording for GIF export |
-| `shell_record_stop` | Stop recording. Returns `download_url` for curl |
-| `shell_stop` | Stop a PTY session |
-
-Screenshot and recording tools return a `download_url` instead of base64 data. LLMs download files using curl (e.g., `curl -o screenshot.png <url>`). This avoids token overflow from large binary payloads.
-
 ## Configuration
 
 | Variable | Parameter | Default | Description |
@@ -142,6 +128,163 @@ Screenshot and recording tools return a `download_url` instead of base64 data. L
 Some configuration can also be provided by the LLM, simply prompt for it:
 
 - Terminal Dimensions: e.g: "Use a terminal that is 80x24 for the recording"
+
+## MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| [`shell_start`](#shell_start) | Start a new PTY session |
+| [`shell_send`](#shell_send) | Send input to a session |
+| [`shell_read`](#shell_read) | Read the terminal buffer |
+| [`shell_screenshot`](#shell_screenshot) | Capture terminal as PNG |
+| [`shell_record_start`](#shell_record_start) | Start recording for GIF export |
+| [`shell_record_stop`](#shell_record_stop) | Stop recording and save GIF |
+| [`shell_stop`](#shell_stop) | Stop a PTY session |
+
+### **shell_start**
+
+Start a new PTY session with a command. Columns and rows are optional and the defaults can be set in the [Configuration](#Configuration):
+
+Start a shell session running `bash`:
+
+```json
+{
+  "command": "bash",
+  "cols": 80,
+  "rows": 24
+}
+```
+
+The response contains the shell session ID (as multiple shell sessions can be run):
+
+```json
+{
+  "shell_session_id": "shell-session-a1b2c3"
+}
+```
+
+### **shell_send**
+
+Send input to a PTY session. The 'delay' can be useful when recording videos or to make sure any previous commands have had time to execute:
+
+```json
+{
+  "session_id": "shell-session-a1b2c3",
+  "input": "ls -la\n",
+  "delay_ms": 100
+}
+```
+
+The response is simply an indicator of success. This could be extended to have a snippet of stdout/stderr but we'd have to be careful about the tokens being blown out:
+
+```json
+{
+  "success": true
+}
+```
+
+### **shell_read**
+
+Read the current terminal buffer. Use `raw: true` to include ANSI escape codes:
+
+```json
+{
+  "session_id": "shell-session-a1b2c3",
+  "raw": false
+}
+```
+
+The response is the terminal content as plain text (truncated to 8KB to avoid context overflow):
+
+```
+total 24
+drwxr-xr-x  5 user staff  160 Dec 18 10:00 .
+drwxr-xr-x 10 user staff  320 Dec 18 09:00 ..
+-rw-r--r--  1 user staff 1234 Dec 18 10:00 README.md
+```
+
+### **shell_screenshot**
+
+Capture terminal as PNG. Also saves SVG, ANSI, and plain text versions:
+
+```json
+{
+  "session_id": "shell-session-a1b2c3",
+  "name": "my-screenshot"
+}
+```
+
+The response contains a `download_url` for curl to save the file locally:
+
+```json
+{
+  "filename": "my-screenshot.png",
+  "download_url": "http://localhost:7498/files/mcp-.../screenshots/my-screenshot.png",
+  "hint": "Use curl -o <filename> <download_url> to save the file"
+}
+```
+
+### **shell_record_start**
+
+Start recording frames for GIF export. Frames are captured at the specified FPS (default 10, max 30):
+
+```json
+{
+  "session_id": "shell-session-a1b2c3",
+  "fps": 10
+}
+```
+
+The response confirms recording has started:
+
+```json
+{
+  "recording": true,
+  "fps": 10,
+  "frames_dir": "/tmp/shellwright/.../frames"
+}
+```
+
+### **shell_record_stop**
+
+Stop recording and render frames to GIF:
+
+```json
+{
+  "session_id": "shell-session-a1b2c3",
+  "name": "my-recording"
+}
+```
+
+The response contains a `download_url` for curl to save the file locally:
+
+```json
+{
+  "filename": "my-recording.gif",
+  "download_url": "http://localhost:7498/files/mcp-.../recordings/my-recording.gif",
+  "hint": "Use curl -o <filename> <download_url> to save the file",
+  "frame_count": 42,
+  "duration_ms": 4200
+}
+```
+
+### **shell_stop**
+
+Stop a PTY session and clean up resources:
+
+```json
+{
+  "session_id": "shell-session-a1b2c3"
+}
+```
+
+The response confirms the session was stopped:
+
+```json
+{
+  "success": true
+}
+```
 
 ## Troubleshooting
 
@@ -210,7 +353,6 @@ claude mcp add --transport stdio shellwright-dev --scope project -- npm --prefix
 Ideas for the future.
 
 - Video export (MP4/MOV) via ffmpeg
-- Set screen size tool
 - Better logging, a bit like `hl`
 
 ## License
