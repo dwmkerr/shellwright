@@ -11,6 +11,7 @@ spec:
       serviceRef:
         name: {{ include "shellwright.fullname" . }}
         port: http
+        path: /mcp
   description: {{ .Values.ark.description }}
   transport: http
   pollInterval: {{ .Values.ark.pollInterval }}
