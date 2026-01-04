@@ -11,6 +11,7 @@
   <p align="center">
     <a href="#quickstart">Quickstart</a> |
     <a href="#examples">Examples</a> |
+    <a href="#installation">Installation</a> |
     <a href="#configuration">Configuration</a> |
     <a href="#mcp-tools">MCP Tools</a> |
     <a href="#developer-guide">Developer Guide</a>
@@ -37,6 +38,8 @@ Configure your LLM, IDE or whatever to use the Shellwright MCP server:
 ```
 
 Use a prompt such as "Using shellwright, open Vim. Write a message saying how to close Vim. Close Vim. Give me a screenshot of each step and a GIF recording, save the screenshots and videos to './output'". Or check the [Examples](#examples).
+
+Check the [Installation](#installation) guide for how to setup Claude Code and other clients.
 
 **Running Locally**
 
@@ -115,6 +118,33 @@ Use [`htop`](https://github.com/htop-dev/htop):
 > Open vim, create validate.py that checks if arguments are UK postcodes. Print ✓ or ✗ for each. Then run: python3 validate.py on a set of UK postcodes (valid and invalid) such as "SW1A 1AA" "INVALID" "M1 1AA". Record as a video. Take 2-3 screenshots along the way.
 
 ![Screenshot: Example - UK Postcode Validation](./docs/examples/postcode.gif)
+
+## Installation
+
+**Claude Code**
+
+```bash
+# Install for current project. Use '--scope user' for for user-wide.
+claude mcp add --scope project shellwright -- npx -y @dwmkerr/shellwright
+
+# Uninstall. Same comment on 'scope'.
+claude mcp remove --scope project shellwright
+```
+
+**Cursor / VS Code / Other MCP Clients**
+
+Add to your MCP configuration file:
+
+```json
+{
+  "mcpServers": {
+    "shellwright": {
+      "command": "npx",
+      "args": ["-y", "@dwmkerr/shellwright"]
+    }
+  }
+}
+```
 
 ## Configuration
 
@@ -353,11 +383,14 @@ npm run dev:http
 
 **Claude Code**
 
-Install locally for Claude Code:
+To test local development changes with Claude Code, add the local build as an MCP server:
 
 ```bash
+# From the shellwright repo root
 claude mcp add --transport stdio shellwright-dev --scope project -- npm --prefix "${PWD}" start
 ```
+
+This registers your local build so you can test changes before publishing.
 
 ## License
 
