@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.5](https://github.com/dwmkerr/shellwright/compare/v0.1.4...v0.1.5) (2026-01-04)
+
+
+### Features
+
+* improve LLM feedback with bufferBefore/bufferAfter and logging ([#23](https://github.com/dwmkerr/shellwright/issues/23)) ([4fee834](https://github.com/dwmkerr/shellwright/commit/4fee834ba3e8c78cdc6000c2ec8e9b9a236198c1))
+
+
+### Bug Fixes
+
+* pin node-pty to 1.0.0 to avoid spawn-helper permission bug ([#31](https://github.com/dwmkerr/shellwright/issues/31)) ([565f8e7](https://github.com/dwmkerr/shellwright/commit/565f8e722a929d1b1c36e5f56aad461bba985914))
+* set MCP server path for Ark v0.1.49 compatibility ([c66a60b](https://github.com/dwmkerr/shellwright/commit/c66a60bcc451a3ec14ccc63e4f85879aac27a8e2))
+
 ## [0.1.4](https://github.com/dwmkerr/shellwright/compare/v0.1.3...v0.1.4) (2025-12-17)
 
 
