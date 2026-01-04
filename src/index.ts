@@ -201,8 +201,18 @@ const createServer = (getMcpSessionId: () => string | undefined) => {
     "shell_start",
     "Start a new PTY session with a command",
     {
-      command: z.string().describe("Command to run (e.g., 'k9s', 'bash')"),
-      args: z.array(z.string()).optional().describe("Command arguments"),
+      command: z.string().describe(
+        "Command to run. Examples: 'bash', 'zsh', 'k9s', 'htop', 'vim'. " +
+        "For interactive shell sessions that should match the user's normal terminal " +
+        "(custom prompt, colors, aliases, PATH), use 'bash' or 'zsh' with args ['--login', '-i']. " +
+        "For standalone TUI programs like k9s, htop, or vim, run the command directly without shell flags."
+      ),
+      args: z.array(z.string()).optional().describe(
+        "Command arguments. For interactive shells (bash, zsh), use ['--login', '-i'] to source " +
+        "the user's shell configuration (~/.bashrc, ~/.zshrc) which provides their custom prompt, " +
+        "aliases, functions, and environment variables. Without these flags, shells start with a " +
+        "minimal environment and basic prompt. Not needed for standalone programs like k9s or htop."
+      ),
       cols: z.number().optional().describe(`Terminal columns (default: ${COLS})`),
       rows: z.number().optional().describe(`Terminal rows (default: ${ROWS})`),
     },
