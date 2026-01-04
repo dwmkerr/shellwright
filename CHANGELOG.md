@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/dwmkerr/shellwright/compare/v0.1.5...v0.1.6) (2026-01-04)
+
+
+### Miscellaneous Chores
+
+* release 0.1.6 ([27854e6](https://github.com/dwmkerr/shellwright/commit/27854e66e47e5fe31bf67625c5f7cd4bcd3ce96d))
+
 ## [0.1.5](https://github.com/dwmkerr/shellwright/compare/v0.1.4...v0.1.5) (2026-01-04)
 
 
