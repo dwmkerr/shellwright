@@ -6,7 +6,7 @@
     User: Open Vim. Tell me how to close it. Close it. Record this as a video.
   </em></p>
   <p align="center">
-    <img src="./docs/examples/vim-close.gif" alt="Shellwright Demo" style="max-width: 100%;">
+    <img src="./docs/examples/vim-close-v2.gif" alt="Shellwright Demo" style="max-width: 100%;">
   </p>
   <p align="center">
     <a href="#quickstart">Quickstart</a> |
@@ -101,7 +101,7 @@ Do some Vim stuff:
 
 > Open Vim. Write a message saying how to close Vim. Close Vim. Give me a screenshot of each step and a GIF recording.
 
-![Screenshot: Examples - Vim](./docs/examples/vim-close.gif)
+![Screenshot: Examples - Vim](./docs/examples/vim-close-v2.gif)
 
 Open [`k9s`](https://k9scli.io/) and show [Ark](https://github.com/mckinsey/agents-at-scale-ark) agents:
 

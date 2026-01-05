@@ -78,6 +78,64 @@ Settings:
 - 2x scale for clarity (`-scale 200%`)
 - 200 DPI density
 
+## README Hero GIF (vim-close)
+
+The main README GIF demonstrates Shellwright by opening vim, writing instructions on how to close it, then closing it.
+
+### Specifications
+
+- **Output**: `docs/examples/vim-close-v2.gif`
+- **Terminal**: 80x20, `one-dark` theme
+- **Prompt**: `dwmkerr_simple` (clean, minimal prompt)
+- **FPS**: 10
+
+### Setup (before recording)
+
+```bash
+# Set alias to hide -u NONE from recording (avoids plugin popups like fzf-lua)
+alias vi='vim -u NONE'
+
+# Set simple prompt
+set_ps1 dwmkerr_simple
+
+# Clear screen
+clear
+```
+
+### Recording Sequence
+
+Execute these steps with ~1 second visible pause between each:
+
+| Step | Input | Notes |
+|------|-------|-------|
+| 1 | `vi` | Show command at prompt |
+| 2 | `\r` (Enter) | Execute, vim opens with welcome screen |
+| 3 | `i` | Enter INSERT mode (visible in status) |
+| 4 | `How to close Vim:` | First line of text |
+| 5 | `\r\r1. Press Escape` | Blank line + instruction 1 |
+| 6 | `\r2. Type :q! to quit without saving` | Instruction 2 |
+| 7 | `\r3. Or type :wq to save and quit` | Instruction 3 |
+| 8 | `\x1b` (Escape) | Exit INSERT mode, show NORMAL |
+| 9 | `:q!` | Show command in command line (wait before executing) |
+| 10 | `\r` (Enter) | Execute quit, return to shell |
+| 11 | `echo "This shell session was run and recorded by Claude Code and Shellwright!"\r` | Dramatic ending |
+| 12 | (wait 1s) | Let final output be visible |
+
+### Timing Notes
+
+**Important**: When recording interactively with an AI agent, wall-clock time between steps includes processing delays. For a clean ~15-20 second GIF:
+
+- Execute all steps in rapid succession without waiting for confirmations
+- Use `delay_ms` of ~1000ms per step for visible pacing
+- Total recording should be ~15-20 seconds, not minutes
+
+The `delay_ms` parameter controls visual pacing (time before capturing buffer), but the recording captures continuously at FPS rate from start to stop.
+
+### Version History
+
+- `vim-close-v1.gif` - Original version (kept for reference)
+- `vim-close-v2.gif` - Current version, clean 16-second recording with proper pacing
+
 ## Build Commands
 
 ```bash
