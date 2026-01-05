@@ -20,9 +20,9 @@ Or prompt your agent to use a specific theme, e.g:
 |-------|------|-------------|
 | `one-dark` | Dark | Dark theme with muted, balanced colors (default) |
 | `one-light` | Light | Light theme with clean, readable colors |
-| `dracula` | Dark | Dark purple theme with vibrant colors |
-| `solarized-dark` | Dark | Dark blue-green theme, easy on the eyes |
-| `nord` | Dark | Arctic-inspired theme with cool blue tones |
+| [`dracula`](https://draculatheme.com) | Dark | Dark purple theme with vibrant colors |
+| [`solarized-dark`](https://ethanschoonover.com/solarized) | Dark | Dark blue-green theme, easy on the eyes |
+| [`nord`](https://nordtheme.com) | Dark | Arctic-inspired theme with cool blue tones |
 
 ## Theme Previews
 
@@ -38,19 +38,19 @@ Light theme with clean, readable colors. Good for presentations and light mode s
 
 ![one-light theme](./themes/one-light.svg)
 
-### dracula
+### [dracula](https://draculatheme.com)
 
 Dark purple theme with vibrant colors. Popular with developers, good for a more colorful look.
 
 ![dracula theme](./themes/dracula.svg)
 
-### solarized-dark
+### [solarized-dark](https://ethanschoonover.com/solarized)
 
 Dark blue-green theme, easy on the eyes. Designed for long coding sessions with reduced eye strain.
 
 ![solarized-dark theme](./themes/solarized-dark.svg)
 
-### nord
+### [nord](https://nordtheme.com)
 
 Arctic-inspired theme with cool blue tones. Clean and modern aesthetic.
 

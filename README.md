@@ -211,9 +211,9 @@ Available themes (see [Theme Guide](./docs/themes.md) for previews):
 |-------|------|-------------|
 | `one-dark` | Dark | Muted, balanced colors (default) |
 | `one-light` | Light | Clean, readable colors |
-| `dracula` | Dark | Vibrant purple theme |
-| `solarized-dark` | Dark | Blue-green, easy on eyes |
-| `nord` | Dark | Arctic-inspired, cool blue tones |
+| [`dracula`](https://draculatheme.com) | Dark | Vibrant purple theme |
+| [`solarized-dark`](https://ethanschoonover.com/solarized) | Dark | Blue-green, easy on eyes |
+| [`nord`](https://nordtheme.com) | Dark | Arctic-inspired, cool blue tones |
 
 ![Theme: one-dark](./docs/themes/one-dark.svg)
 
