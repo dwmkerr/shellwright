@@ -10,6 +10,10 @@ Shellwright supports multiple color themes for screenshots and recordings. Set t
 }
 ```
 
+Or prompt your agent to use a specific theme, e.g:
+
+> Create a shell recording of how to list files and folders and search for text, use the 'nord' theme.
+
 ## Available Themes
 
 | Theme | Type | Description |
@@ -32,17 +36,25 @@ Dark theme with muted, balanced colors. Works well for most use cases.
 
 Light theme with clean, readable colors. Good for presentations and light mode screenshots.
 
+![one-light theme](./themes/one-light.png)
+
 ### dracula
 
 Dark purple theme with vibrant colors. Popular with developers, good for a more colorful look.
+
+![dracula theme](./themes/dracula.png)
 
 ### solarized-dark
 
 Dark blue-green theme, easy on the eyes. Designed for long coding sessions with reduced eye strain.
 
+![solarized-dark theme](./themes/solarized-dark.png)
+
 ### nord
 
 Arctic-inspired theme with cool blue tones. Clean and modern aesthetic.
+
+![nord theme](./themes/nord.png)
 
 ## Tips
 

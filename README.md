@@ -155,7 +155,7 @@ Add to your MCP configuration file:
 | Variable | Parameter | Default | Description |
 |----------|-----------|---------|-------------|
 | `PORT` | `--port`, `-p` | `7498` | Server port ("SWRT" on a phone keypad) |
-| `THEME` | `--theme`, `-t` | `one-dark` | Color theme (`one-dark`, `one-light`, `dracula`, `solarized-dark`, `nord`) |
+| `THEME` | `--theme`, `-t` | `one-dark` | Color theme (`one-dark`, `one-light`, `dracula`, `solarized-dark`, `nord`, etc) |
 | `TEMP_DIR` | `--temp-dir` | `/tmp/shellwright` | Directory for recording frames |
 | `FONT_SIZE` | `--font-size` | `14` | Font size in pixels for screenshots/recordings |
 | `FONT_FAMILY` | `--font-family` | `Hack, Monaco, Courier, monospace` | Font family for screenshots/recordings (use a font with bold variant for bold text support) |
@@ -167,7 +167,7 @@ Add to your MCP configuration file:
 Some configuration can also be provided by the LLM, simply prompt for it:
 
 - Terminal Dimensions: e.g: "Use a terminal that is 80x24 for the recording"
-- Theme: e.g: "Use the dracula theme for this recording" (can be set per-session via `shell_start`)
+- Theme: e.g: "Use the dracula theme for this recording"
 
 ## MCP Tools
 
@@ -195,7 +195,7 @@ Start a shell session running `bash`:
 }
 ```
 
-Start a session with a specific theme:
+Start a session with an login mode shell and a specific theme:
 
 ```json
 {
