@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { themes, getThemeList, getThemesByType, DEFAULT_THEME } from "./lib/themes.js";
 
 export function registerPrompts(server: McpServer): void {
   server.prompt(
@@ -79,5 +80,46 @@ Recording:
         }
       }]
     })
+  );
+
+  server.prompt(
+    "theme-selection",
+    "Guide for choosing and using terminal themes",
+    {},
+    () => {
+      const { dark, light } = getThemesByType();
+      const themeList = getThemeList();
+      const tips = Object.values(themes)
+        .filter(t => t.tip)
+        .map(t => `- '${t.name}': ${t.tip}`)
+        .join("\n");
+
+      return {
+        messages: [{
+          role: "user" as const,
+          content: {
+            type: "text" as const,
+            text: `Terminal theme selection guide:
+
+Available themes:
+${themeList}
+
+Dark themes: ${dark.join(", ")}
+Light themes: ${light.join(", ")}
+Default: ${DEFAULT_THEME}
+
+Usage:
+Set theme when starting a session:
+  shell_start({ command: "bash", args: ["--login", "-i"], theme: "dracula" })
+
+Theme applies to all screenshots and recordings for that session.
+Different sessions can use different themes.
+
+Tips:
+${tips}`
+          }
+        }]
+      };
+    }
   );
 }

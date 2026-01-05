@@ -57,14 +57,18 @@ function escapeXml(str: string): string {
 }
 
 function colorToHex(colorCode: number, palette: string[], defaultColor: string): string {
-  if (colorCode <= 0) {
+  // xterm getFgColor/getBgColor returns:
+  //   -1 for default (no explicit color)
+  //   0-255 for palette colors (0=black, 1=red, 2=green, etc.)
+  //   >255 for RGB colors (raw RGB value)
+  if (colorCode < 0) {
     return defaultColor;
   }
-  if (colorCode >= 1 && colorCode <= 256) {
-    return palette[colorCode - 1] || defaultColor;
+  if (colorCode >= 0 && colorCode <= 255) {
+    return palette[colorCode] || defaultColor;
   }
-  // RGB color - xterm.js returns raw RGB values > 256
-  if (colorCode > 256) {
+  // RGB color - xterm.js returns raw RGB values > 255
+  if (colorCode > 255) {
     return `#${colorCode.toString(16).padStart(6, "0")}`;
   }
   return defaultColor;

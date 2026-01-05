@@ -127,6 +127,10 @@ Use [`htop`](https://github.com/htop-dev/htop):
 # Install for current project. Use '--scope user' for for user-wide.
 claude mcp add --scope project shellwright -- npx -y @dwmkerr/shellwright
 
+# Configure via command line parameters (or env vars) if needed.
+claude mcp add --scope project shellwright -- npx -y @dwmkerr/shellwright \
+  --log-path /tmp/shellwright/log.jsonl
+
 # Uninstall. Same comment on 'scope'.
 claude mcp remove --scope project shellwright
 ```
@@ -151,7 +155,7 @@ Add to your MCP configuration file:
 | Variable | Parameter | Default | Description |
 |----------|-----------|---------|-------------|
 | `PORT` | `--port`, `-p` | `7498` | Server port ("SWRT" on a phone keypad) |
-| `THEME` | `--theme`, `-t` | `one-dark` | Color theme (`one-dark`, `one-light`, `dracula`, `solarized-dark`, `nord`) |
+| `THEME` | `--theme`, `-t` | `one-dark` | Color theme (`one-dark`, `one-light`, `dracula`, `solarized-dark`, `nord`, [etc...](./docs/themes.md) |
 | `TEMP_DIR` | `--temp-dir` | `/tmp/shellwright` | Directory for recording frames |
 | `FONT_SIZE` | `--font-size` | `14` | Font size in pixels for screenshots/recordings |
 | `FONT_FAMILY` | `--font-family` | `Hack, Monaco, Courier, monospace` | Font family for screenshots/recordings (use a font with bold variant for bold text support) |
@@ -163,6 +167,7 @@ Add to your MCP configuration file:
 Some configuration can also be provided by the LLM, simply prompt for it:
 
 - Terminal Dimensions: e.g: "Use a terminal that is 80x24 for the recording"
+- Theme: e.g: "Use the dracula theme for this recording"
 
 ## MCP Tools
 
@@ -178,7 +183,7 @@ Some configuration can also be provided by the LLM, simply prompt for it:
 
 ### **shell_start**
 
-Start a new PTY session with a command. Columns and rows are optional and the defaults can be set in the [Configuration](#Configuration):
+Start a new PTY session with a command. Columns, rows, and theme are optional and the defaults can be set in the [Configuration](#Configuration):
 
 Start a shell session running `bash`:
 
@@ -190,11 +195,34 @@ Start a shell session running `bash`:
 }
 ```
 
-The response contains the shell session ID (as multiple shell sessions can be run):
+Start a session with an login mode shell and a specific theme:
 
 ```json
 {
-  "shell_session_id": "shell-session-a1b2c3"
+  "command": "bash",
+  "args": ["--login", "-i"],
+  "theme": "dracula"
+}
+```
+
+Available themes (see [Theme Guide](./docs/themes.md) for previews):
+
+| Theme | Type | Description |
+|-------|------|-------------|
+| `one-dark` | Dark | Muted, balanced colors (default) |
+| `one-light` | Light | Clean, readable colors |
+| [`dracula`](https://draculatheme.com) | Dark | Vibrant purple theme |
+| [`solarized-dark`](https://ethanschoonover.com/solarized) | Dark | Blue-green, easy on eyes |
+| [`nord`](https://nordtheme.com) | Dark | Arctic-inspired, cool blue tones |
+
+![Themes](./docs/themes/themes-demo.gif)
+
+The response contains the shell session ID (as multiple shell sessions can be run) and theme:
+
+```json
+{
+  "shell_session_id": "shell-session-a1b2c3",
+  "theme": "dracula"
 }
 ```
 

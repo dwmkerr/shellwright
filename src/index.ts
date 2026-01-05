@@ -26,7 +26,7 @@ const resvgOptions: ResvgRenderOptions = {
   fitTo: { mode: "zoom", value: 2 },
 };
 import { Command } from "commander";
-import { getTheme, themes, DEFAULT_THEME, Theme } from "./lib/themes.js";
+import { getTheme, themes, DEFAULT_THEME, Theme, getThemesByType } from "./lib/themes.js";
 
 const DEFAULT_FONT_SIZE = 14;
 const DEFAULT_FONT_FAMILY = "Hack, Monaco, Courier, monospace";
@@ -146,6 +146,7 @@ interface Session {
   rows: number;
   buffer: string[];
   terminal: InstanceType<typeof Terminal>;
+  theme: Theme;
   recording?: RecordingState;
 }
 
@@ -215,11 +216,21 @@ const createServer = (getMcpSessionId: () => string | undefined) => {
       ),
       cols: z.number().optional().describe(`Terminal columns (default: ${COLS})`),
       rows: z.number().optional().describe(`Terminal rows (default: ${ROWS})`),
+      theme: z.string().optional().describe(
+        (() => {
+          const { dark, light } = getThemesByType();
+          return `Color theme for screenshots and recordings. ` +
+            `Dark themes: ${dark.join(", ")}. Light themes: ${light.join(", ")}. ` +
+            `Default: ${DEFAULT_THEME}. ` +
+            Object.values(themes).map(t => `'${t.name}': ${t.description}`).join(". ") + ".";
+        })()
+      ),
     },
-    async ({ command, args, cols, rows }) => {
+    async ({ command, args, cols, rows, theme }) => {
       const id = `shell-session-${randomUUID().slice(0, 6)}`;
       const termCols = cols || COLS;
       const termRows = rows || ROWS;
+      const sessionTheme = theme ? getTheme(theme) : currentTheme;
 
       const ptyProcess = pty.spawn(command, args || [], {
         name: "xterm-256color",
@@ -242,6 +253,7 @@ const createServer = (getMcpSessionId: () => string | undefined) => {
         rows: termRows,
         buffer: [],
         terminal,
+        theme: sessionTheme,
       };
 
       ptyProcess.onData((data) => {
@@ -253,10 +265,10 @@ const createServer = (getMcpSessionId: () => string | undefined) => {
       });
 
       sessions.set(id, session);
-      log(`[shellwright] Started session ${id}: ${command}`);
+      log(`[shellwright] Started session ${id}: ${command} (theme: ${sessionTheme.name})`);
 
-      const output = { shell_session_id: id };
-      logToolCall("shell_start", { command, args, cols, rows }, output);
+      const output = { shell_session_id: id, theme: sessionTheme.name };
+      logToolCall("shell_start", { command, args, cols, rows, theme }, output);
 
       return {
         content: [{ type: "text" as const, text: JSON.stringify(output) }],
@@ -357,9 +369,9 @@ Tips:
       await fs.mkdir(screenshotDir, { recursive: true });
 
       // Generate all formats from xterm buffer
-      const svg = bufferToSvg(session.terminal, session.cols, session.rows, { theme: currentTheme, fontSize: FONT_SIZE, fontFamily: FONT_FAMILY });
+      const svg = bufferToSvg(session.terminal, session.cols, session.rows, { theme: session.theme, fontSize: FONT_SIZE, fontFamily: FONT_FAMILY });
       const png = new Resvg(svg, resvgOptions).render().asPng();
-      const ansi = bufferToAnsi(session.terminal, session.cols, session.rows, { theme: currentTheme });
+      const ansi = bufferToAnsi(session.terminal, session.cols, session.rows, { theme: session.theme });
       const text = bufferToText(session.terminal, session.cols, session.rows);
 
       // Save all formats
@@ -448,7 +460,7 @@ Tips:
           if (!session.recording) return;
 
           const frameNum = session.recording.frameCount++;
-          const svg = bufferToSvg(session.terminal, session.cols, session.rows, { theme: currentTheme, fontSize: FONT_SIZE, fontFamily: FONT_FAMILY });
+          const svg = bufferToSvg(session.terminal, session.cols, session.rows, { theme: session.theme, fontSize: FONT_SIZE, fontFamily: FONT_FAMILY });
           const png = new Resvg(svg, resvgOptions).render().asPng();
           const framePath = path.join(framesDir, `frame${String(frameNum).padStart(6, "0")}.png`);
           await fs.writeFile(framePath, png);
