@@ -30,31 +30,31 @@ Or prompt your agent to use a specific theme, e.g:
 
 Dark theme with muted, balanced colors. Works well for most use cases.
 
-![one-dark theme](./themes/one-dark.png)
+![one-dark theme](./themes/one-dark.svg)
 
 ### one-light
 
 Light theme with clean, readable colors. Good for presentations and light mode screenshots.
 
-![one-light theme](./themes/one-light.png)
+![one-light theme](./themes/one-light.svg)
 
 ### dracula
 
 Dark purple theme with vibrant colors. Popular with developers, good for a more colorful look.
 
-![dracula theme](./themes/dracula.png)
+![dracula theme](./themes/dracula.svg)
 
 ### solarized-dark
 
 Dark blue-green theme, easy on the eyes. Designed for long coding sessions with reduced eye strain.
 
-![solarized-dark theme](./themes/solarized-dark.png)
+![solarized-dark theme](./themes/solarized-dark.svg)
 
 ### nord
 
 Arctic-inspired theme with cool blue tones. Clean and modern aesthetic.
 
-![nord theme](./themes/nord.png)
+![nord theme](./themes/nord.svg)
 
 ## Tips
 

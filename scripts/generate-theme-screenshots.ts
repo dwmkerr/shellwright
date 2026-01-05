@@ -5,15 +5,26 @@
  */
 
 import xterm from "@xterm/headless";
-import { Resvg } from "@resvg/resvg-js";
 import * as fs from "fs";
 import * as path from "path";
 import { bufferToSvg } from "../src/lib/buffer-to-svg.js";
 import { themes } from "../src/lib/themes.js";
 
-const COLS = 60;
-const ROWS = 6;
+const COLS = 50;
+const ROWS = 8;
 const OUTPUT_DIR = path.join(import.meta.dirname, "../docs/themes");
+
+// ANSI color codes
+const RESET = "\x1b[0m";
+const BOLD = "\x1b[1m";
+const RED = "\x1b[31m";
+const GREEN = "\x1b[32m";
+const YELLOW = "\x1b[33m";
+const BLUE = "\x1b[34m";
+const MAGENTA = "\x1b[35m";
+const CYAN = "\x1b[36m";
+const WHITE = "\x1b[37m";
+const BRIGHT_BLACK = "\x1b[90m";
 
 async function generateScreenshots() {
   // Ensure output directory exists
@@ -31,10 +42,15 @@ async function generateScreenshots() {
       allowProposedApi: true,
     });
 
-    // Write content that looks like a shell session
-    terminal.write("$ echo \"Hello Shellwright\"\r\n");
-    terminal.write("Hello Shellwright\r\n");
-    terminal.write("$ ");
+    // Write colorful content demonstrating the theme
+    // Simulates a git-style colored prompt and ls output
+    terminal.write(`${GREEN}~/projects/shellwright${RESET} ${CYAN}main${RESET} ${YELLOW}✓${RESET}\r\n`);
+    terminal.write(`${BOLD}${WHITE}$ ${RESET}ls -la\r\n`);
+    terminal.write(`${BLUE}drwxr-xr-x${RESET}  ${GREEN}src${RESET}/\r\n`);
+    terminal.write(`${BLUE}drwxr-xr-x${RESET}  ${GREEN}docs${RESET}/\r\n`);
+    terminal.write(`-rw-r--r--  ${WHITE}README.md${RESET}\r\n`);
+    terminal.write(`-rw-r--r--  ${YELLOW}package.json${RESET}\r\n`);
+    terminal.write(`${BRIGHT_BLACK}4 items${RESET}\r\n`);
 
     // Wait for terminal to process
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -46,19 +62,11 @@ async function generateScreenshots() {
       fontFamily: "Hack, Monaco, Courier, monospace",
     });
 
-    // Convert SVG to PNG
-    const resvg = new Resvg(svg, {
-      font: { loadSystemFonts: true },
-      fitTo: { mode: "original" },
-    });
-    const png = resvg.render().asPng();
-
-    // Save files
+    // Save SVG only (cleaner than PNG for docs)
     const basePath = path.join(OUTPUT_DIR, themeName);
     fs.writeFileSync(`${basePath}.svg`, svg);
-    fs.writeFileSync(`${basePath}.png`, png);
 
-    console.log(`  -> ${themeName}.png`);
+    console.log(`  -> ${themeName}.svg`);
 
     terminal.dispose();
   }
