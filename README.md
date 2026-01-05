@@ -215,7 +215,7 @@ Available themes (see [Theme Guide](./docs/themes.md) for previews):
 | [`solarized-dark`](https://ethanschoonover.com/solarized) | Dark | Blue-green, easy on eyes |
 | [`nord`](https://nordtheme.com) | Dark | Arctic-inspired, cool blue tones |
 
-![Theme: one-dark](./docs/themes/one-dark.svg)
+![Themes](./docs/themes/themes-demo.gif)
 
 The response contains the shell session ID (as multiple shell sessions can be run) and theme:
 
