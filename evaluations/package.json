@@ -1,0 +1,14 @@
+{
+  "name": "shellwright-evaluations",
+  "private": true,
+  "type": "module",
+  "description": "Evaluation scenarios for shellwright recordings",
+  "scripts": {
+    "eval": "tsx run.ts",
+    "compare": "tsx compare.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
+    "tsx": "^4.7.0"
+  }
+}

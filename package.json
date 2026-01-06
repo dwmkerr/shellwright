@@ -16,7 +16,9 @@
     "test": "jest",
     "test:emulator": "tsx tests/run-tests.ts",
     "test:k9s": "tsx tests/04-k9s/run.ts",
-    "lint": "eslint src/**/*.ts"
+    "lint": "eslint src/**/*.ts",
+    "eval": "cd evaluations && npm run eval",
+    "eval:compare": "cd evaluations && npm run compare"
   },
   "repository": {
     "type": "git",

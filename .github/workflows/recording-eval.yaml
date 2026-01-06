@@ -1,0 +1,44 @@
+name: Recording Evaluation
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install shellwright dependencies
+        run: npm ci
+
+      - name: Build shellwright
+        run: npm run build
+
+      - name: Install evaluation dependencies
+        working-directory: evaluations
+        run: npm install
+
+      - name: Run evaluations
+        working-directory: evaluations
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: npm run eval
+
+      - name: Generate comparison table
+        working-directory: evaluations
+        run: npm run compare >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload recordings
+        uses: actions/upload-artifact@v4
+        with:
+          name: recordings
+          path: evaluations/scenarios/*/recording.gif
+          if-no-files-found: warn
