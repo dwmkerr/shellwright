@@ -2,19 +2,6 @@
 
 Automated recording evaluations using Claude API with shellwright.
 
-## Structure
-
-```
-evaluations/
-├── scenarios/           # Each subfolder is a test scenario
-│   └── vim-session/
-│       ├── prompt.md    # Instructions for Claude
-│       └── recording.gif # Generated recording
-├── run.ts               # Run all scenarios
-├── compare.ts           # Generate comparison table
-└── README.md
-```
-
 ## Usage
 
 ### Run evaluations locally

@@ -2,6 +2,11 @@
 
 Create a recording demonstrating how to close vim.
 
+## Pacing
+
+- Use `delay_ms` of 800-1000ms between steps for visible pacing
+- Execute tool calls quickly without unnecessary pauses between them
+
 ## Instructions
 
 1. Start a shell session (80x20, one-dark theme)

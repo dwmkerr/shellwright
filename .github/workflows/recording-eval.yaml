@@ -30,7 +30,7 @@ jobs:
         working-directory: evaluations
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: npm run eval
+        run: npm start
 
       - name: Generate comparison table
         working-directory: evaluations
