@@ -43,6 +43,14 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: npm start
 
+      - name: Generate comparison
+        if: github.event.action != 'closed'
+        working-directory: evaluations
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+        run: npm run compare >> $GITHUB_STEP_SUMMARY
+
       - name: Deploy recordings to GitHub Pages
         uses: rossjrw/pr-preview-action@v1
         id: preview
@@ -51,15 +59,17 @@ jobs:
           preview-branch: gh-pages
           umbrella-dir: pr-preview
           action: auto
+          comment: false
 
-      - name: Generate comparison table
+      - name: Comment with preview link
         if: github.event.action != 'closed'
-        working-directory: evaluations
-        env:
-          PREVIEW_URL: ${{ steps.preview.outputs.preview-url }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_HEAD_REF: ${{ github.head_ref }}
-        run: npm run compare >> $GITHUB_STEP_SUMMARY
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: recording-eval
+          message: |
+            ## Recording Evaluation
+
+            🎬 **[View recording comparisons](${{ steps.preview.outputs.preview-url }})**
 
       - name: Upload recordings
         if: github.event.action != 'closed'
