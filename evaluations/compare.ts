@@ -9,12 +9,11 @@ import * as fs from "fs/promises";
 import * as path from "path";
 
 const SCENARIOS_DIR = path.join(import.meta.dirname, "scenarios");
-const MAX_EMBED_SIZE = 500 * 1024; // 500KB max for base64 embedding
 
 interface ScenarioComparison {
   name: string;
-  baseline: { exists: boolean; sizeKb?: string; path?: string };
-  recorded: { exists: boolean; sizeKb?: string; path?: string };
+  baseline: { exists: boolean; sizeKb?: string };
+  recorded: { exists: boolean; sizeKb?: string };
 }
 
 async function getFileStats(filePath: string): Promise<{ exists: boolean; sizeKb?: string; sizeBytes?: number }> {
@@ -30,17 +29,6 @@ async function getFileStats(filePath: string): Promise<{ exists: boolean; sizeKb
   }
 }
 
-async function toBase64(filePath: string): Promise<string | null> {
-  try {
-    const stat = await fs.stat(filePath);
-    if (stat.size > MAX_EMBED_SIZE) return null;
-    const data = await fs.readFile(filePath);
-    return `data:image/gif;base64,${data.toString("base64")}`;
-  } catch {
-    return null;
-  }
-}
-
 async function getScenarioComparison(scenarioPath: string): Promise<ScenarioComparison> {
   const name = path.basename(scenarioPath);
   const baselinePath = path.join(scenarioPath, "baseline.gif");
@@ -51,9 +39,22 @@ async function getScenarioComparison(scenarioPath: string): Promise<ScenarioComp
 
   return {
     name,
-    baseline: { ...baseline, path: baselinePath },
-    recorded: { ...recorded, path: recordedPath },
+    baseline,
+    recorded,
   };
+}
+
+function getBaselineUrl(scenario: string): string {
+  const repo = process.env.GITHUB_REPOSITORY || "dwmkerr/shellwright";
+  return `https://raw.githubusercontent.com/${repo}/main/evaluations/scenarios/${scenario}/baseline.gif`;
+}
+
+function getRecordedUrl(scenario: string): string | null {
+  const previewUrl = process.env.PREVIEW_URL;
+  if (!previewUrl) return null;
+  // Preview URL is like https://owner.github.io/repo/pr-preview/pr-123/
+  // Files are at: {previewUrl}{scenario}/recording.gif
+  return `${previewUrl}${scenario}/recording.gif`;
 }
 
 async function main() {
@@ -83,27 +84,26 @@ async function main() {
     console.log(`| ${c.name} | ${baselineSize} | ${recordedSize} | ${status} |`);
   }
 
-  // Show side-by-side comparisons with embedded images
+  // Show side-by-side comparisons
   console.log("\n### Side-by-Side Comparisons\n");
-  console.log("Download the `recordings` artifact to view generated GIFs.\n");
 
   for (const c of comparisons) {
-    console.log(`<details><summary><strong>${c.name}</strong></summary>\n`);
+    console.log(`#### ${c.name}\n`);
     console.log("| Baseline | Recorded |");
     console.log("|----------|----------|");
 
-    // Try to embed baseline (committed file, accessible via raw GitHub URL)
     const baselineCell = c.baseline.exists
-      ? `![baseline](https://raw.githubusercontent.com/${process.env.GITHUB_REPOSITORY || "dwmkerr/shellwright"}/${process.env.GITHUB_BASE_REF || "main"}/evaluations/scenarios/${c.name}/baseline.gif)`
+      ? `![baseline](${getBaselineUrl(c.name)})`
       : "No baseline";
 
-    // Recorded is in artifact, can't embed directly
+    const recordedUrl = getRecordedUrl(c.name);
     const recordedCell = c.recorded.exists
-      ? `✅ Generated (${c.recorded.sizeKb}) - see artifact`
+      ? recordedUrl
+        ? `![recorded](${recordedUrl})`
+        : `✅ Generated (${c.recorded.sizeKb}) - download artifact`
       : "❌ Not generated";
 
-    console.log(`| ${baselineCell} | ${recordedCell} |`);
-    console.log("\n</details>\n");
+    console.log(`| ${baselineCell} | ${recordedCell} |\n`);
   }
 
   // Summary
@@ -115,6 +115,9 @@ async function main() {
   }
   if (hasFailures) {
     console.log("\n> **Warning:** Some recordings failed to generate.\n");
+  }
+  if (!process.env.PREVIEW_URL) {
+    console.log("\n> **Note:** Running locally - recorded images not hosted. Set PREVIEW_URL to embed.\n");
   }
 }
 

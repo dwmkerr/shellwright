@@ -2,41 +2,66 @@ name: Recording Evaluation
 
 on:
   pull_request:
+    types: [opened, reopened, synchronize, closed]
   workflow_dispatch:
+
+concurrency: preview-${{ github.ref }}
 
 jobs:
   evaluate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Node.js
+        if: github.event.action != 'closed'
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
 
       - name: Install shellwright dependencies
+        if: github.event.action != 'closed'
         run: npm ci
 
       - name: Build shellwright
+        if: github.event.action != 'closed'
         run: npm run build
 
       - name: Install evaluation dependencies
+        if: github.event.action != 'closed'
         working-directory: evaluations
         run: npm install
 
       - name: Run evaluations
+        if: github.event.action != 'closed'
         working-directory: evaluations
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: npm start
 
+      - name: Deploy recordings to GitHub Pages
+        uses: rossjrw/pr-preview-action@v1
+        id: preview
+        with:
+          source-dir: ./evaluations/scenarios/
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: auto
+
       - name: Generate comparison table
+        if: github.event.action != 'closed'
         working-directory: evaluations
+        env:
+          PREVIEW_URL: ${{ steps.preview.outputs.preview-url }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: npm run compare >> $GITHUB_STEP_SUMMARY
 
       - name: Upload recordings
+        if: github.event.action != 'closed'
         uses: actions/upload-artifact@v4
         with:
           name: recordings
