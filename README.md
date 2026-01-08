@@ -24,7 +24,7 @@
 
 ## Quickstart
 
-Configure your LLM, IDE or whatever to use the Shellwright MCP server:
+Configure your LLM, [Claude Code](#claude-code), [Cursor](#installation) or whatever to use the Shellwright MCP server:
 
 ```json
 {
@@ -37,9 +37,14 @@ Configure your LLM, IDE or whatever to use the Shellwright MCP server:
 }
 ```
 
-Use a prompt such as "Using shellwright, open Vim. Write a message saying how to close Vim. Close Vim. Give me a screenshot of each step and a GIF recording, save the screenshots and videos to './output'". Or check the [Examples](#examples).
+Use a prompt such as:
 
-Check the [Installation](#installation) guide for how to setup Claude Code and other clients. I also use this to create rich recordings for my book [Effective Shell](https://effective-shell.com).
+> Using shellwright, open Vim. Write a message saying how to close Vim. Close Vim. Give me a screenshot of each step and a GIF recording, save the screenshots and videos to './output'".
+>
+
+A video recording will be saved, as well as screenshots in multiple formats.
+
+Check the [Examples](#examples) or [Installation](#installation) guide for more details. I also use this to create rich recordings for my book [Effective Shell](https://effective-shell.com).
 
 **Running Locally**
 
@@ -121,7 +126,7 @@ Use [`htop`](https://github.com/htop-dev/htop):
 
 ## Installation
 
-**Claude Code**
+### Claude Code
 
 ```bash
 # Install for current project. Use '--scope user' for for user-wide.
@@ -135,7 +140,7 @@ claude mcp add --scope project shellwright -- npx -y @dwmkerr/shellwright \
 claude mcp remove --scope project shellwright
 ```
 
-**Cursor / VS Code / Other MCP Clients**
+### Cursor / VS Code / Other MCP Clients
 
 Add to your MCP configuration file:
 
