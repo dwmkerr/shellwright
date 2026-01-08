@@ -55,7 +55,7 @@ async function runScenario(scenarioPath: string): Promise<ScenarioResult> {
 
   try {
     let toolsCalled = 0;
-    let downloadUrl: string | null = null;
+    let gifPath: string | null = null;
     const mcpScript = path.join(ROOT_DIR, "dist/index.js");
     console.log(`  Starting agent with MCP server: ${mcpScript}`);
     for await (const message of query({
@@ -75,10 +75,6 @@ ${prompt}`,
         },
       },
     })) {
-      // Debug: log all message types
-      if (message.type !== "assistant" && message.type !== "user" && message.type !== "result") {
-        console.log(`  [debug] Message type: ${message.type}`);
-      }
       if (message.type === "assistant") {
         for (const block of message.message.content) {
           if (block.type === "tool_use") {
@@ -97,17 +93,17 @@ ${prompt}`,
               : Array.isArray(block.content)
                 ? block.content.map((c: { text?: string }) => c.text || "").join("")
                 : JSON.stringify(block.content);
-            if (content.includes("download_url")) {
-              console.log(`  Tool result with download_url: ${content.slice(0, 200)}`);
-            }
             try {
               const result = JSON.parse(content);
-              if (result.download_url) {
-                downloadUrl = result.download_url;
-                console.log(`  Download URL: ${downloadUrl}`);
+              if (result.download_url && !gifPath) {
+                const dest = path.join(scenarioPath, "recording.gif");
+                console.log(`  Downloading: ${result.download_url}`);
+                await downloadGif(result.download_url, dest);
+                gifPath = dest;
+                console.log(`  ✓ Recording saved: ${gifPath}`);
               }
             } catch {
-              // Not JSON, ignore
+              // Not JSON or download failed, ignore
             }
           }
         }
@@ -119,11 +115,7 @@ ${prompt}`,
       }
     }
 
-    // Download the GIF from the URL
-    if (downloadUrl) {
-      const gifPath = path.join(scenarioPath, "recording.gif");
-      await downloadGif(downloadUrl, gifPath);
-      console.log(`  ✓ Recording saved: ${gifPath}`);
+    if (gifPath) {
       return { name: scenarioName, success: true, gifPath };
     }
 
