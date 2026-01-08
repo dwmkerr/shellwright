@@ -7,3 +7,4 @@ dist/
 examples/*/screenshots/
 output/
 .mcp.json
+.playwright-mcp/

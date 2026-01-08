@@ -9,7 +9,7 @@ Create a recording demonstrating how to close vim.
 
 ## Instructions
 
-1. Start a shell session (80x20, one-dark theme)
+1. Start a shell session using `bash` with args `["--login", "-i"]` (80x20, one-dark theme)
 2. Start recording at 10 FPS
 3. Type `vim` and press Enter
 4. Wait for vim to open

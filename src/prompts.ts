@@ -37,7 +37,8 @@ export function registerPrompts(server: McpServer): void {
           text: `Record a terminal session demonstrating: ${task}
 
 Workflow:
-1. shell_start with appropriate cols/rows
+1. shell_start with bash --login -i and appropriate cols/rows
+   Example: shell_start({ command: "bash", args: ["--login", "-i"], cols: 80, rows: 24 })
 2. shell_record_start with fps (10-15 for demos)
 3. Perform actions - remember \\r after commands!
 4. shell_screenshot at key moments
