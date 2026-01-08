@@ -93,17 +93,18 @@ ${prompt}`,
               : Array.isArray(block.content)
                 ? block.content.map((c: { text?: string }) => c.text || "").join("")
                 : JSON.stringify(block.content);
+            let parsed;
             try {
-              const result = JSON.parse(content);
-              if (result.download_url && !gifPath) {
-                const dest = path.join(scenarioPath, "recording.gif");
-                console.log(`  Downloading: ${result.download_url}`);
-                await downloadGif(result.download_url, dest);
-                gifPath = dest;
-                console.log(`  ✓ Recording saved: ${gifPath}`);
-              }
+              parsed = JSON.parse(content);
             } catch {
-              // Not JSON or download failed, ignore
+              continue; // Not JSON, skip
+            }
+            if (parsed.download_url && !gifPath) {
+              const dest = path.join(scenarioPath, "recording.gif");
+              console.log(`  Downloading: ${parsed.download_url}`);
+              await downloadGif(parsed.download_url, dest);
+              gifPath = dest;
+              console.log(`  ✓ Recording saved: ${gifPath}`);
             }
           }
         }
