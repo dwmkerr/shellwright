@@ -16,12 +16,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install system dependencies
+        if: github.event.action != 'closed'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-hack-ttf neovim
+          fc-cache -fv
+
       - name: Setup Node.js
         if: github.event.action != 'closed'
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
+
+      - name: Install Claude CLI
+        if: github.event.action != 'closed'
+        run: npm install -g @anthropic-ai/claude-code
 
       - name: Install shellwright dependencies
         if: github.event.action != 'closed'
