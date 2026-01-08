@@ -10,12 +10,14 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
       margin: 0; padding: 20px; background: #0d1117; color: #c9d1d9;
     }
-    h1 { color: #58a6ff; margin-bottom: 20px; }
+    h1 { color: #58a6ff; margin-bottom: 10px; }
+    .note { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 12px; margin-bottom: 20px; font-size: 13px; }
+    .note code { background: #21262d; padding: 2px 6px; border-radius: 3px; }
     table { width: 100%; border-collapse: collapse; }
     th, td { padding: 12px; border: 1px solid #30363d; text-align: left; vertical-align: top; }
     th { background: #161b22; color: #58a6ff; }
-    .scenario { width: 150px; font-weight: bold; }
-    .preview { width: 45%; }
+    .scenario { width: 120px; font-weight: bold; }
+    .preview { width: 29%; }
     .preview img { max-width: 100%; border-radius: 6px; margin-top: 8px; }
     .size { font-size: 12px; color: #8b949e; }
     .missing { color: #f85149; font-style: italic; }
@@ -23,11 +25,16 @@
 </head>
 <body>
   <h1>Recording Evaluation</h1>
+  <div class="note">
+    <strong>Baselines:</strong> Local = developer machine, CI/CD = previous CI run.<br>
+    To update CI/CD baseline: download PR recording and commit as <code>baseline-cicd.gif</code>
+  </div>
   <table>
     <thead>
       <tr>
         <th>Scenario</th>
-        <th>Baseline</th>
+        <th>Baseline (Local)</th>
+        <th>Baseline (CI/CD)</th>
         <th>PR</th>
       </tr>
     </thead>
@@ -36,9 +43,17 @@
       <tr>
         <td class="scenario"><strong>{{name}}</strong></td>
         <td class="preview">
-          <div class="size">{{#if baselineSize}}{{baselineSize}}{{else}}Missing{{/if}}</div>
-          {{#if baselineSize}}
-            <img src="{{baselineUrl}}" alt="baseline">
+          <div class="size">{{#if baselineLocalSize}}{{baselineLocalSize}}{{else}}Missing{{/if}}</div>
+          {{#if baselineLocalSize}}
+            <img src="{{baselineLocalUrl}}" alt="baseline-local">
+          {{else}}
+            <span class="missing">No baseline</span>
+          {{/if}}
+        </td>
+        <td class="preview">
+          <div class="size">{{#if baselineCicdSize}}{{baselineCicdSize}}{{else}}Missing{{/if}}</div>
+          {{#if baselineCicdSize}}
+            <img src="{{baselineCicdUrl}}" alt="baseline-cicd">
           {{else}}
             <span class="missing">No baseline</span>
           {{/if}}

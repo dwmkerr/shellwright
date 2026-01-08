@@ -19,10 +19,10 @@ async function getFileSize(filePath: string): Promise<string | null> {
   }
 }
 
-function baselineUrl(scenario: string): string {
+function baselineUrl(scenario: string, filename: string): string {
   const repo = process.env.GITHUB_REPOSITORY || "dwmkerr/shellwright";
   const branch = process.env.GITHUB_HEAD_REF || "main";
-  return `https://raw.githubusercontent.com/${repo}/${branch}/evaluations/scenarios/${scenario}/baseline.gif`;
+  return `https://raw.githubusercontent.com/${repo}/${branch}/evaluations/scenarios/${scenario}/${filename}`;
 }
 
 async function main() {
@@ -33,8 +33,10 @@ async function main() {
       .filter((e) => e.isDirectory())
       .map(async (e) => ({
         name: e.name,
-        baselineSize: await getFileSize(path.join(SCENARIOS_DIR, e.name, "baseline.gif")),
-        baselineUrl: baselineUrl(e.name),
+        baselineLocalSize: await getFileSize(path.join(SCENARIOS_DIR, e.name, "baseline-local.gif")),
+        baselineLocalUrl: baselineUrl(e.name, "baseline-local.gif"),
+        baselineCicdSize: await getFileSize(path.join(SCENARIOS_DIR, e.name, "baseline-cicd.gif")),
+        baselineCicdUrl: baselineUrl(e.name, "baseline-cicd.gif"),
         recordedSize: await getFileSize(path.join(SCENARIOS_DIR, e.name, "recording.gif")),
       }))
   );
