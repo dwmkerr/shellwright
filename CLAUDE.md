@@ -30,6 +30,7 @@ npm run dev       # Development with hot-reload
 - **TypeScript + ESM** - Modern Node.js with ES modules
 - **MCP SDK** - Uses `@modelcontextprotocol/sdk` for MCP protocol
 - **PTY** - Uses `node-pty` for pseudo-terminal management
+- **File Server** - HTTP file server runs on port 7498 regardless of MCP transport mode (stdio or HTTP). Tool results include `download_url` which is always valid.
 
 ## Commit Format
 

@@ -74,7 +74,7 @@ npx @modelcontextprotocol/inspector
 
 **Testing with an Agent**
 
-Run the [`demo.py`](./demo/demo.py) program to chat to an agent that has the Shellwright tool:
+Run the [`demo.py`](./demo/demo.py) program to chat to an agent that has the Shellwright tool. Note that you must have the Shellwright MCP sever running in HTTP mode (e.g. `npm run dev:http`):
 
 ```bash
 # Optionally setup your .env to specify configuration.
@@ -298,7 +298,7 @@ The response contains a `download_url` for curl to save the file locally:
 
 ### **shell_record_start**
 
-Start recording frames for GIF export. Frames are captured at the specified FPS (default 10, max 30):
+Start recording frames for GIF export. Frames are captured at the specified FPS (default 10, max 30, compression occurs by deduplicating identical frames):
 
 ```json
 {
