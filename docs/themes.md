@@ -59,7 +59,7 @@ Arctic-inspired theme with cool blue tones. Clean and modern aesthetic.
 
 ### nab
 
-Warm burnt orange theme with earthy tones.
+My LLM described this as "Warm burnt orange theme with earthy tones". However, it is actually my colleague Nab's terminal theme, and when I first saw it I was so shocked by how awful it was I couldn't get it out of my head. Now I have decided to try and bring it to the world. Use with extreme caution.
 
 ![nab theme](./themes/nab.svg)
 
