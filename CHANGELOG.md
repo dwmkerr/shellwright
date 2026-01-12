@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.8](https://github.com/dwmkerr/shellwright/compare/v0.1.7...v0.1.8) (2026-01-09)
+
+
+### Features
+
+* adaptive frame timing for GIF recordings ([#47](https://github.com/dwmkerr/shellwright/issues/47)) ([83712cf](https://github.com/dwmkerr/shellwright/commit/83712cf6327e99f9894756785e8adb7605864130))
+* add recording evaluation workflow ([#43](https://github.com/dwmkerr/shellwright/issues/43)) ([94d2176](https://github.com/dwmkerr/shellwright/commit/94d21762ec354d94f9c7d518a8736014ba06ed35))
+* improved README hero GIF with better pacing ([#39](https://github.com/dwmkerr/shellwright/issues/39)) ([2c14998](https://github.com/dwmkerr/shellwright/commit/2c14998aa490a2cc154061b80482ca53ecc0fee3))
+
+
+### Bug Fixes
+
+* use bash for shell sessions to avoid prompt issues ([#46](https://github.com/dwmkerr/shellwright/issues/46)) ([2154079](https://github.com/dwmkerr/shellwright/commit/2154079b1839f9a33a980496bfd09bb0f07ee0b9))
+
 ## [0.1.7](https://github.com/dwmkerr/shellwright/compare/v0.1.6...v0.1.7) (2026-01-05)
 
 
