@@ -23,7 +23,7 @@ Or prompt your agent to use a specific theme, e.g:
 | [`dracula`](https://draculatheme.com) | Dark | Dark purple theme with vibrant colors |
 | [`solarized-dark`](https://ethanschoonover.com/solarized) | Dark | Dark blue-green theme, easy on the eyes |
 | [`nord`](https://nordtheme.com) | Dark | Arctic-inspired theme with cool blue tones |
-| `nab` | Dark | Warm burnt orange theme with earthy tones |
+| [`nab](#nab)| Dark | Warm burnt orange theme with earthy tones |
 
 ## Theme Previews
 
@@ -69,3 +69,4 @@ My LLM described this as "Warm burnt orange theme with earthy tones". However, i
 - Use `dracula` or `nord` for a more vibrant dark look
 - The default `one-dark` works well for most cases
 - Different sessions can use different themes simultaneously
+- Make your enemies use `nab`
