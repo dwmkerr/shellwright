@@ -2,6 +2,7 @@
 
 import express, { Request, Response } from "express";
 import { randomUUID } from "crypto";
+import { execSync } from "child_process";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -147,17 +148,79 @@ interface RecordingState {
 
 interface Session {
   id: string;
-  pty: pty.IPty;
+  pty?: pty.IPty;
   cols: number;
   rows: number;
   buffer: string[];
   terminal: InstanceType<typeof Terminal>;
   theme: Theme;
   recording?: RecordingState;
+  attached?: {
+    tmuxPane: string;
+    tty: string;
+    captureInterval?: ReturnType<typeof setInterval>;
+  };
 }
 
 const sessions = new Map<string, Session>();
 const transports: { [sessionId: string]: StreamableHTTPServerTransport } = {};
+
+// Find TTY by walking up the process tree
+function findParentTty(): string | null {
+  try {
+    let pid = process.ppid;
+    for (let i = 0; i < 10; i++) {
+      const tty = execSync(`ps -p ${pid} -o tty=`, { encoding: "utf-8" }).trim();
+      if (tty && tty !== "??" && !tty.startsWith("?")) {
+        return tty.startsWith("/dev/") ? tty : `/dev/${tty}`;
+      }
+      const ppid = execSync(`ps -p ${pid} -o ppid=`, { encoding: "utf-8" }).trim();
+      if (!ppid || ppid === "0" || ppid === "1") break;
+      pid = parseInt(ppid, 10);
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+// Find tmux pane for a TTY
+function findTmuxPane(tty: string): string | null {
+  try {
+    const ttyShort = tty.replace("/dev/", "");
+    const panes = execSync("tmux list-panes -a -F '#{pane_tty} #{session_name}:#{window_index}.#{pane_index}'", { encoding: "utf-8" });
+    for (const line of panes.split("\n")) {
+      const [paneTty, paneId] = line.trim().split(" ");
+      if (paneTty === tty || paneTty === `/dev/${ttyShort}` || paneTty.endsWith(ttyShort)) {
+        return paneId;
+      }
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+// Get tmux pane dimensions
+function getTmuxPaneDimensions(pane: string): { cols: number; rows: number } | null {
+  try {
+    const output = execSync(`tmux display-message -t "${pane}" -p "#{pane_width} #{pane_height}"`, { encoding: "utf-8" }).trim();
+    const [cols, rows] = output.split(" ").map(Number);
+    if (cols && rows) return { cols, rows };
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+// Capture tmux pane content with ANSI codes
+function captureTmuxPane(pane: string): string {
+  try {
+    return execSync(`tmux capture-pane -t "${pane}" -p -e`, { encoding: "utf-8" });
+  } catch {
+    return "";
+  }
+}
 
 // Build temp path: /tmp/shellwright/mcp-session-{mcpId}/{shellId}
 function getSessionDir(mcpSessionId: string | undefined, shellSessionId: string): string {
@@ -299,7 +362,11 @@ Tips:
     async ({ session_id, input, delay_ms }) => {
       const session = sessions.get(session_id);
       if (!session) {
-        throw new Error(`Session not found: ${session_id}`);
+        throw new Error(`[shell_send] error: session not found: ${session_id}`);
+      }
+
+      if (session.attached || !session.pty) {
+        throw new Error(`[shell_send] error: cannot send input to attached sessions`);
       }
 
       const bufferBefore = bufferToText(session.terminal, session.cols, session.rows);
@@ -407,14 +474,18 @@ Tips:
 
   server.tool(
     "shell_stop",
-    "Stop a PTY session",
+    "Stop a PTY session. For attached sessions, use shell_detach instead.",
     {
       session_id: z.string().describe("Session ID"),
     },
     async ({ session_id }) => {
       const session = sessions.get(session_id);
       if (!session) {
-        throw new Error(`Session not found: ${session_id}`);
+        throw new Error(`[shell_stop] error: session not found: ${session_id}`);
+      }
+
+      if (session.attached) {
+        throw new Error(`[shell_stop] error: use shell_detach for attached sessions`);
       }
 
       // Stop recording if active
@@ -422,12 +493,118 @@ Tips:
         clearInterval(session.recording.interval);
       }
 
-      session.pty.kill();
+      session.pty?.kill();
       sessions.delete(session_id);
       log(`[shellwright] Stopped session ${session_id}`);
 
       const output = { success: true };
       logToolCall("shell_stop", { session_id }, output);
+
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify(output) }],
+      };
+    }
+  );
+
+  server.tool(
+    "shell_attach",
+    "Attach to the current terminal for screenshots and recordings. Requires tmux.",
+    {},
+    async () => {
+      // Find parent TTY
+      const tty = findParentTty();
+      if (!tty) {
+        throw new Error(`[shell_attach] error: could not find parent tty`);
+      }
+
+      // Find tmux pane
+      const tmuxPane = findTmuxPane(tty);
+      if (!tmuxPane) {
+        throw new Error(`[shell_attach] error: tmux not detected. Run Claude Code inside tmux.`);
+      }
+
+      // Get pane dimensions
+      const dims = getTmuxPaneDimensions(tmuxPane);
+      const cols = dims?.cols || COLS;
+      const rows = dims?.rows || ROWS;
+
+      const id = `shell-session-${randomUUID().slice(0, 6)}`;
+
+      const terminal = new Terminal({
+        cols,
+        rows,
+        allowProposedApi: true,
+      });
+
+      const session: Session = {
+        id,
+        cols,
+        rows,
+        buffer: [],
+        terminal,
+        theme: currentTheme,
+        attached: {
+          tmuxPane,
+          tty,
+        },
+      };
+
+      // Start continuous capture from tmux pane
+      const captureAndUpdate = () => {
+        const content = captureTmuxPane(tmuxPane);
+        if (content) {
+          session.buffer = [content];
+          terminal.reset();
+          terminal.write(content);
+        }
+      };
+
+      captureAndUpdate();
+      session.attached!.captureInterval = setInterval(captureAndUpdate, 100);
+
+      sessions.set(id, session);
+      log(`[shellwright] Attached session ${id} to ${tmuxPane} (${tty})`);
+
+      const output = { session_id: id };
+      logToolCall("shell_attach", {}, output);
+
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify(output) }],
+      };
+    }
+  );
+
+  server.tool(
+    "shell_detach",
+    "Detach from an attached terminal session. For spawned sessions, use shell_stop instead.",
+    {
+      session_id: z.string().describe("Session ID"),
+    },
+    async ({ session_id }) => {
+      const session = sessions.get(session_id);
+      if (!session) {
+        throw new Error(`[shell_detach] error: session not found: ${session_id}`);
+      }
+
+      if (!session.attached) {
+        throw new Error(`[shell_detach] error: use shell_stop for spawned sessions`);
+      }
+
+      // Stop capture interval
+      if (session.attached.captureInterval) {
+        clearInterval(session.attached.captureInterval);
+      }
+
+      // Stop recording if active
+      if (session.recording) {
+        clearInterval(session.recording.interval);
+      }
+
+      sessions.delete(session_id);
+      log(`[shellwright] Detached session ${session_id}`);
+
+      const output = { success: true };
+      logToolCall("shell_detach", { session_id }, output);
 
       return {
         content: [{ type: "text" as const, text: JSON.stringify(output) }],
