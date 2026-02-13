@@ -144,8 +144,16 @@ async function main() {
   console.log("Building shellwright...");
   execSync("npm run build", { stdio: "inherit", cwd: ROOT_DIR });
 
-  // Find all scenarios
-  const scenarios = await fs.readdir(SCENARIOS_DIR);
+  // Find all scenarios, optionally filtered by command line argument
+  const filterArg = process.argv[2];
+  let scenarios = await fs.readdir(SCENARIOS_DIR);
+  if (filterArg) {
+    scenarios = scenarios.filter((s) => s.includes(filterArg));
+    if (scenarios.length === 0) {
+      console.error(`No scenarios matching "${filterArg}"`);
+      process.exit(1);
+    }
+  }
   const results: ScenarioResult[] = [];
 
   for (const scenario of scenarios) {
