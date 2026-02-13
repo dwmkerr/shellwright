@@ -158,6 +158,43 @@ export function bufferToSvg(
     }
   }
 
+  // Render cursor if visible
+  if (terminal.modes.showCursor) {
+    const cursorX = buffer.cursorX;
+    const cursorY = buffer.cursorY;
+
+    // Only render if cursor is within visible area
+    if (cursorX >= 0 && cursorX < cols && cursorY >= 0 && cursorY < rows) {
+      const cursorXPos = padding + cursorX * charWidth;
+      const cursorYPos = padding + cursorY * lineHeight;
+
+      // Get the cell at cursor position for color inversion
+      const cursorLine = buffer.getLine(cursorY);
+      const cursorCell = cursorLine?.getCell(cursorX);
+
+      // Cursor block uses foreground color
+      const cursorBg = theme.foreground;
+      // Text under cursor uses background color (inversion)
+      const cursorFg = theme.background;
+
+      // Draw cursor block
+      lines.push(
+        `<rect x="${cursorXPos}" y="${cursorYPos}" width="${charWidth}" height="${lineHeight}" fill="${cursorBg}"/>`
+      );
+
+      // Draw inverted character if present
+      if (cursorCell) {
+        const char = cursorCell.getChars();
+        if (char && char.trim()) {
+          const textYPos = cursorYPos + opts.fontSize;
+          lines.push(
+            `<text x="${cursorXPos}" y="${textYPos}" fill="${cursorFg}">${escapeXml(char)}</text>`
+          );
+        }
+      }
+    }
+  }
+
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" font-family="${opts.fontFamily}" font-size="${opts.fontSize}">
 <rect width="100%" height="100%" fill="${theme.background}"/>
 <g fill="${theme.foreground}">
