@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.9](https://github.com/dwmkerr/shellwright/compare/v0.1.8...v0.1.9) (2026-02-13)
+
+
+### Features
+
+* render cursor in screenshots and recordings ([#57](https://github.com/dwmkerr/shellwright/issues/57)) ([9342b0d](https://github.com/dwmkerr/shellwright/commit/9342b0dc51639bb261d827e2f84f5fe9785324cc))
+
 ## [0.1.8](https://github.com/dwmkerr/shellwright/compare/v0.1.7...v0.1.8) (2026-01-09)
 
 
