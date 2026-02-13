@@ -16,10 +16,13 @@
     <a href="#mcp-tools">MCP Tools</a> |
     <a href="#developer-guide">Developer Guide</a>
   </p>
+  <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
   <p align="center">
     <a href="https://github.com/dwmkerr/shellwright/actions/workflows/cicd.yaml"><img src="https://github.com/dwmkerr/shellwright/actions/workflows/cicd.yaml/badge.svg" alt="cicd"></a>
     <a href="https://www.npmjs.com/package/@dwmkerr/shellwright"><img src="https://img.shields.io/npm/v/@dwmkerr/shellwright" alt="npm version"></a>
+    <a href="#contributors"><img src="https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square" alt="All Contributors"></a>
   </p>
+  <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 
 ## Quickstart
@@ -429,6 +432,28 @@ claude mcp add shellwright-dev --scope project -- node "${PWD}/dist/index.js"
 ```
 
 This registers your local build so you can test changes before publishing.
+
+## Contributors
+
+Thanks to all contributors!
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/fahd04"><img src="https://avatars.githubusercontent.com/u/142957956?v=4?s=100" width="100px;" alt="fahd04"/><br /><sub><b>fahd04</b></sub></a><br /><a href="https://github.com/dwmkerr/shellwright/commits?author=fahd04" title="Code">💻</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
 ## License
 
