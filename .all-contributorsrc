@@ -1,0 +1,21 @@
+{
+  "projectName": "shellwright",
+  "projectOwner": "dwmkerr",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": ["README.md"],
+  "imageSize": 100,
+  "commit": false,
+  "commitConvention": "angular",
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "contributors": [
+    {
+      "login": "fahd04",
+      "name": "fahd04",
+      "avatar_url": "https://avatars.githubusercontent.com/u/142957956?v=4",
+      "profile": "https://github.com/fahd04",
+      "contributions": ["code"]
+    }
+  ]
+}
