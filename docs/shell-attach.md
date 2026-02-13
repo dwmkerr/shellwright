@@ -15,6 +15,16 @@ tmux list-panes -a | grep $TTY      # find tmux pane for the tty
 tmux capture-pane -t $PANE -p -e    # capture pane content with ANSI codes
 ```
 
+For a screenshot or recording:
+
+```bash
+shell_attach {tty} # starts capture loop (tmux → xterm buffer, polls every 100ms)
+shell_screenshot   # reads xterm buffer once
+shell_record_start # starts recording loop (xterm → PNG frames at configured FPS)
+shell_record_stop  # stops recording loop, renders GIF
+shell_detach       # stops capture loop, cleans up
+```
+
 ## Usage
 
 Start a tmux session, then run something like Claude code:
@@ -31,8 +41,8 @@ Then attach to the terminal:
 # Initialize MCP session (see scripts/mcp-init.sh)
 SESSION=$(./scripts/mcp-init.sh)
 
-# Attach to current terminal (see scripts/mcp-tool-call.sh)
-./scripts/mcp-tool-call.sh $SESSION shell_attach
+# Attach to current terminal - pass your shell's TTY
+./scripts/mcp-tool-call.sh $SESSION shell_attach "{\"tty\":\"$(tty)\"}"
 ```
 
 Example response:
@@ -41,9 +51,23 @@ Example response:
 { "session_id": "shell-session-abc123" }
 ```
 
+Note: `shell_attach` will only work when the Shellwright MCP server is running on the same host as the target terminal. Using the `stdio` transport should always work, and the `http` transport will work if running on the same host. The `http` transport on a remote host will not be able to access the local shell session.
+
 The `session_id` can be used with `shell_screenshot`, `shell_record_start`, `shell_record_stop`, and `shell_read`.
 
-With the session successfully attached, you can start and stop a recording:
+Take a screenshot:
+
+```bash
+./scripts/mcp-tool-call.sh $SESSION shell_screenshot '{"session_id": "shell-session-abc123"}'
+```
+
+Example response:
+
+```json
+{ "filename": "screenshot.png", "download_url": "http://localhost:7498/files/..." }
+```
+
+Start a recording:
 
 ```bash
 ./scripts/mcp-tool-call.sh $SESSION shell_record_start '{"session_id": "shell-session-abc123"}'

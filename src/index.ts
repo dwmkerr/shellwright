@@ -508,13 +508,13 @@ Tips:
 
   server.tool(
     "shell_attach",
-    "Attach to the current terminal for screenshots and recordings. Requires tmux.",
-    {},
-    async () => {
-      // Find parent TTY
-      const tty = findParentTty();
+    "Attach to a terminal for screenshots and recordings. Requires tmux. Pass the TTY of the target terminal.",
+    {
+      tty: z.string().describe("TTY device path (e.g., $(tty) in bash gives /dev/ttys001)"),
+    },
+    async ({ tty }) => {
       if (!tty) {
-        throw new Error(`[shell_attach] error: could not find parent tty`);
+        throw new Error(`[shell_attach] error: tty parameter required`);
       }
 
       // Find tmux pane
