@@ -429,6 +429,8 @@ To test local development changes with Claude Code, add the local build as an MC
 # From the shellwright repo root - build first!
 npm run build
 claude mcp add shellwright-dev --scope project -- node "${PWD}/dist/index.js"
+# remove with:
+claude mcp remove shellwright-dev --scope project
 ```
 
 This registers your local build so you can test changes before publishing.
