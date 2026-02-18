@@ -6,18 +6,29 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
-import { z } from "zod";
-import * as pty from "node-pty";
 import * as fs from "fs/promises";
 import * as fsSync from "fs";
 import * as path from "path";
-import xterm from "@xterm/headless";
-const { Terminal } = xterm;
-import { bufferToSvg } from "./lib/buffer-to-svg.js";
-import { bufferToAnsi, bufferToText } from "./lib/buffer-to-ansi.js";
 import { Resvg, ResvgRenderOptions } from "@resvg/resvg-js";
-import { renderGif } from "./lib/render-gif.js";
 import { registerPrompts } from "./prompts.js";
+import {
+  shellStart,
+  shellStartSchema,
+  shellSend,
+  shellSendSchema,
+  shellRead,
+  shellReadSchema,
+  shellScreenshot,
+  shellScreenshotSchema,
+  shellStop,
+  shellStopSchema,
+  shellRecordStart,
+  shellRecordStartSchema,
+  shellRecordStop,
+  shellRecordStopSchema,
+  Session,
+  ToolContext,
+} from "./tools/index.js";
 
 // Use system fonts for proper text rendering (resvg ignores them by default).
 // Scale 2x for crisp output on retina displays.
@@ -26,7 +37,7 @@ const resvgOptions: ResvgRenderOptions = {
   fitTo: { mode: "zoom", value: 2 },
 };
 import { Command } from "commander";
-import { getTheme, themes, DEFAULT_THEME, Theme, getThemesByType } from "./lib/themes.js";
+import { getTheme, themes, DEFAULT_THEME } from "./lib/themes.js";
 
 const DEFAULT_FONT_SIZE = 14;
 const DEFAULT_FONT_FAMILY = "Hack, Monaco, Courier, monospace";
@@ -81,7 +92,7 @@ function log(message: string): void {
   }
 }
 
-let currentTheme: Theme;
+let currentTheme: ReturnType<typeof getTheme>;
 try {
   currentTheme = getTheme(opts.theme);
   log(`[shellwright] Transport: ${USE_HTTP ? "HTTP" : "stdio"}`);
@@ -94,66 +105,6 @@ try {
   console.error(`[shellwright] ${(err as Error).message}`);
   console.error(`[shellwright] Available themes: ${Object.keys(themes).join(", ")}`);
   process.exit(1);
-}
-
-// Build a clean env for PTY sessions - removes vars that could cause terminal interference
-function getPtyEnv(): { [key: string]: string } {
-  const env = { ...process.env } as { [key: string]: string };
-  // Remove terminal-related vars that could cause the PTY to interact with parent terminal
-  delete env.TERM_PROGRAM;
-  delete env.TERM_PROGRAM_VERSION;
-  delete env.TERM_SESSION_ID;
-  delete env.ITERM_SESSION_ID;
-  delete env.ITERM_PROFILE;
-  delete env.TMUX;
-  delete env.TMUX_PANE;
-  delete env.STY;  // screen
-  delete env.WINDOW;
-  // Set terminal type and color support
-  env.TERM = "xterm-256color";
-  env.COLORTERM = "truecolor";
-  return env;
-}
-
-// Interpret escape sequences in input strings (e.g., \r → carriage return)
-function interpretEscapes(str: string): string {
-  return str
-    .replace(/\\r/g, "\r")
-    .replace(/\\n/g, "\n")
-    .replace(/\\t/g, "\t")
-    .replace(/\\x1b/g, "\x1b")
-    .replace(/\\x([0-9a-fA-F]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
-    .replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
-}
-
-// Basic ANSI stripping (incomplete - see 04-findings.md for why this is insufficient)
-function stripAnsi(str: string): string {
-  return str
-    .replace(/\x1b\[[0-9;?]*[a-zA-Z]/g, "")  // CSI sequences
-    .replace(/\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)/g, "")  // OSC sequences
-    .replace(/\x1b[PX^_][^\x1b]*\x1b\\/g, "")  // DCS/SOS/PM/APC
-    .replace(/\x1b[\(\)][AB0-2]/g, "")  // Character set selection
-    .replace(/\x1b[=>NOM78]/g, "")  // Other escape sequences
-    .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, "");  // Control chars
-}
-
-interface RecordingState {
-  startTime: number;
-  framesDir: string;
-  frameCount: number;
-  interval: ReturnType<typeof setInterval>;
-  fps: number;
-}
-
-interface Session {
-  id: string;
-  pty: pty.IPty;
-  cols: number;
-  rows: number;
-  buffer: string[];
-  terminal: InstanceType<typeof Terminal>;
-  theme: Theme;
-  recording?: RecordingState;
 }
 
 const sessions = new Map<string, Session>();
@@ -204,82 +155,29 @@ const createServer = (getMcpSessionId: () => string | undefined) => {
     version: "0.1.0",
   });
 
+  // Create tool context for all tools
+  const toolContext: ToolContext = {
+    sessions,
+    getMcpSessionId,
+    getSessionDir,
+    getDownloadUrl,
+    log,
+    logToolCall,
+    config: {
+      PORT,
+      FONT_SIZE,
+      FONT_FAMILY,
+      COLS,
+      ROWS,
+    },
+    resvgOptions,
+  };
+
   server.tool(
     "shell_start",
     "Start a new PTY session with a command",
-    {
-      command: z.string().describe(
-        "Command to run. Examples: 'bash', 'zsh', 'k9s', 'htop', 'vim'. " +
-        "For interactive shell sessions that should match the user's normal terminal " +
-        "(custom prompt, colors, aliases, PATH), use 'bash' or 'zsh' with args ['--login', '-i']. " +
-        "For standalone TUI programs like k9s, htop, or vim, run the command directly without shell flags."
-      ),
-      args: z.array(z.string()).optional().describe(
-        "Command arguments. For interactive shells (bash, zsh), use ['--login', '-i'] to source " +
-        "the user's shell configuration (~/.bashrc, ~/.zshrc) which provides their custom prompt, " +
-        "aliases, functions, and environment variables. Without these flags, shells start with a " +
-        "minimal environment and basic prompt. Not needed for standalone programs like k9s or htop."
-      ),
-      cols: z.number().optional().describe(`Terminal columns (default: ${COLS})`),
-      rows: z.number().optional().describe(`Terminal rows (default: ${ROWS})`),
-      theme: z.string().optional().describe(
-        (() => {
-          const { dark, light } = getThemesByType();
-          return `Color theme for screenshots and recordings. ` +
-            `Dark themes: ${dark.join(", ")}. Light themes: ${light.join(", ")}. ` +
-            `Default: ${DEFAULT_THEME}. ` +
-            Object.values(themes).map(t => `'${t.name}': ${t.description}`).join(". ") + ".";
-        })()
-      ),
-    },
-    async ({ command, args, cols, rows, theme }) => {
-      const id = `shell-session-${randomUUID().slice(0, 6)}`;
-      const termCols = cols || COLS;
-      const termRows = rows || ROWS;
-      const sessionTheme = theme ? getTheme(theme) : currentTheme;
-
-      const ptyProcess = pty.spawn(command, args || [], {
-        name: "xterm-256color",
-        cols: termCols,
-        rows: termRows,
-        cwd: process.cwd(),
-        env: getPtyEnv(),
-      });
-
-      const terminal = new Terminal({
-        cols: termCols,
-        rows: termRows,
-        allowProposedApi: true,
-      });
-
-      const session: Session = {
-        id,
-        pty: ptyProcess,
-        cols: termCols,
-        rows: termRows,
-        buffer: [],
-        terminal,
-        theme: sessionTheme,
-      };
-
-      ptyProcess.onData((data) => {
-        session.buffer.push(data);
-        if (session.buffer.length > 1000) {
-          session.buffer.shift();
-        }
-        terminal.write(data);
-      });
-
-      sessions.set(id, session);
-      log(`[shellwright] Started session ${id}: ${command} (theme: ${sessionTheme.name})`);
-
-      const output = { shell_session_id: id, theme: sessionTheme.name };
-      logToolCall("shell_start", { command, args, cols, rows, theme }, output);
-
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(output) }],
-      };
-    }
+    shellStartSchema,
+    async (params) => shellStart(params, toolContext)
   );
 
   server.tool(
@@ -291,250 +189,43 @@ Tips:
 - For vim: send "i" to enter insert mode BEFORE typing text, check bufferAfter for "-- INSERT --"
 - Always check bufferAfter to verify your input had the expected effect
 - Common escapes: Enter=\\r, Escape=\\x1b, Ctrl+C=\\x03, arrows=\\x1b[A/B/C/D`,
-    {
-      session_id: z.string().describe("Session ID"),
-      input: z.string().describe("Input to send (supports escape sequences like \\x1b[A for arrow up)"),
-      delay_ms: z.number().optional().describe("Milliseconds to wait after sending input before capturing 'bufferAfter' (default: 100). Increase for slow commands."),
-    },
-    async ({ session_id, input, delay_ms }) => {
-      const session = sessions.get(session_id);
-      if (!session) {
-        throw new Error(`Session not found: ${session_id}`);
-      }
-
-      const bufferBefore = bufferToText(session.terminal, session.cols, session.rows);
-
-      const interpreted = interpretEscapes(input);
-      session.pty.write(interpreted);
-      log(`[shellwright] Sent to ${session_id}: ${JSON.stringify(input)}`);
-
-      await new Promise((resolve) => setTimeout(resolve, delay_ms || 100));
-
-      const bufferAfter = bufferToText(session.terminal, session.cols, session.rows);
-
-      const output = { success: true, bufferBefore, bufferAfter };
-      logToolCall("shell_send", { session_id, input, delay_ms }, output);
-
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(output) }],
-      };
-    }
+    shellSendSchema,
+    async (params) => shellSend(params, toolContext)
   );
 
   server.tool(
     "shell_read",
     "Read the current terminal buffer as plain text (no ANSI codes)",
-    {
-      session_id: z.string().describe("Session ID"),
-      raw: z.boolean().optional().describe("Return raw ANSI codes (default: false)"),
-    },
-    async ({ session_id, raw }) => {
-      const session = sessions.get(session_id);
-      if (!session) {
-        throw new Error(`Session not found: ${session_id}`);
-      }
-
-      let content = session.buffer.join("");
-      if (!raw) {
-        content = stripAnsi(content);
-      }
-
-      // Limit to last 8KB to avoid context overflow
-      const maxSize = 8192;
-      if (content.length > maxSize) {
-        content = "...(truncated)...\n" + content.slice(-maxSize);
-      }
-
-      log(`[shellwright] Read ${content.length} chars from ${session_id}`);
-      logToolCall("shell_read", { session_id, raw }, { length: content.length });
-
-      return {
-        content: [{ type: "text" as const, text: content }],
-      };
-    }
+    shellReadSchema,
+    async (params) => shellRead(params, toolContext)
   );
 
   server.tool(
     "shell_screenshot",
     "Capture terminal screenshot as PNG. Returns a download_url - use curl to save the file locally (e.g., curl -o screenshot.png <url>)",
-    {
-      session_id: z.string().describe("Session ID"),
-      name: z.string().optional().describe("Screenshot name (default: screenshot_{timestamp})"),
-    },
-    async ({ session_id, name }) => {
-      const session = sessions.get(session_id);
-      if (!session) {
-        throw new Error(`Session not found: ${session_id}`);
-      }
-
-      const baseName = name || `screenshot_${Date.now()}`;
-      const filename = `${baseName}.png`;
-      const sessionDir = getSessionDir(getMcpSessionId(), session_id);
-      const screenshotDir = path.join(sessionDir, "screenshots");
-
-      await fs.mkdir(screenshotDir, { recursive: true });
-
-      // Generate all formats from xterm buffer
-      const svg = bufferToSvg(session.terminal, session.cols, session.rows, { theme: session.theme, fontSize: FONT_SIZE, fontFamily: FONT_FAMILY });
-      const png = new Resvg(svg, resvgOptions).render().asPng();
-      const ansi = bufferToAnsi(session.terminal, session.cols, session.rows, { theme: session.theme });
-      const text = bufferToText(session.terminal, session.cols, session.rows);
-
-      // Save all formats
-      const pngPath = path.join(screenshotDir, `${baseName}.png`);
-      const svgPath = path.join(screenshotDir, `${baseName}.svg`);
-      const ansiPath = path.join(screenshotDir, `${baseName}.ansi`);
-      const textPath = path.join(screenshotDir, `${baseName}.txt`);
-
-      await Promise.all([
-        fs.writeFile(pngPath, png),
-        fs.writeFile(svgPath, svg),
-        fs.writeFile(ansiPath, ansi),
-        fs.writeFile(textPath, text),
-      ]);
-
-      log(`[shellwright] Screenshot saved: ${screenshotDir}/${baseName}.{png,svg,ansi,txt}`);
-
-      const downloadUrl = getDownloadUrl(getMcpSessionId(), session_id, "screenshots", filename);
-      const output = { filename, download_url: downloadUrl, hint: "Use curl -o <filename> <download_url> to save the file" };
-      logToolCall("shell_screenshot", { session_id, name }, output);
-
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(output) }],
-      };
-    }
+    shellScreenshotSchema,
+    async (params) => shellScreenshot(params, toolContext)
   );
 
   server.tool(
     "shell_stop",
     "Stop a PTY session",
-    {
-      session_id: z.string().describe("Session ID"),
-    },
-    async ({ session_id }) => {
-      const session = sessions.get(session_id);
-      if (!session) {
-        throw new Error(`Session not found: ${session_id}`);
-      }
-
-      // Stop recording if active
-      if (session.recording) {
-        clearInterval(session.recording.interval);
-      }
-
-      session.pty.kill();
-      sessions.delete(session_id);
-      log(`[shellwright] Stopped session ${session_id}`);
-
-      const output = { success: true };
-      logToolCall("shell_stop", { session_id }, output);
-
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(output) }],
-      };
-    }
+    shellStopSchema,
+    async (params) => shellStop(params, toolContext)
   );
 
   server.tool(
     "shell_record_start",
     "Start recording a terminal session (captures frames for GIF/video export)",
-    {
-      session_id: z.string().describe("Session ID"),
-      fps: z.number().optional().describe("Frames per second (default: 10, max: 30)"),
-    },
-    async ({ session_id, fps }) => {
-      const session = sessions.get(session_id);
-      if (!session) {
-        throw new Error(`Session not found: ${session_id}`);
-      }
-
-      if (session.recording) {
-        throw new Error(`Session ${session_id} is already recording`);
-      }
-
-      const recordingFps = Math.min(fps || 10, 30);
-      const sessionDir = getSessionDir(getMcpSessionId(), session_id);
-      const framesDir = path.join(sessionDir, "frames");
-      await fs.mkdir(framesDir, { recursive: true });
-
-      session.recording = {
-        startTime: Date.now(),
-        framesDir,
-        frameCount: 0,
-        fps: recordingFps,
-        interval: setInterval(async () => {
-          if (!session.recording) return;
-
-          const frameNum = session.recording.frameCount++;
-          const svg = bufferToSvg(session.terminal, session.cols, session.rows, { theme: session.theme, fontSize: FONT_SIZE, fontFamily: FONT_FAMILY });
-          const png = new Resvg(svg, resvgOptions).render().asPng();
-          const framePath = path.join(framesDir, `frame${String(frameNum).padStart(6, "0")}.png`);
-          await fs.writeFile(framePath, png);
-        }, 1000 / recordingFps),
-      };
-
-      log(`[shellwright] Recording started: ${session_id} @ ${recordingFps} FPS → ${framesDir}`);
-
-      const output = { recording: true, fps: recordingFps, frames_dir: framesDir };
-      logToolCall("shell_record_start", { session_id, fps }, output);
-
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(output) }],
-      };
-    }
+    shellRecordStartSchema,
+    async (params) => shellRecordStart(params, toolContext)
   );
 
   server.tool(
     "shell_record_stop",
     "Stop recording and save GIF. Returns a download_url - use curl to save the file locally (e.g., curl -o recording.gif <url>)",
-    {
-      session_id: z.string().describe("Session ID"),
-      name: z.string().optional().describe("Recording name (default: recording_{timestamp})"),
-    },
-    async ({ session_id, name }) => {
-      const session = sessions.get(session_id);
-      if (!session) {
-        throw new Error(`Session not found: ${session_id}`);
-      }
-
-      if (!session.recording) {
-        throw new Error(`Session ${session_id} is not recording`);
-      }
-
-      clearInterval(session.recording.interval);
-      const { framesDir, frameCount, fps, startTime } = session.recording;
-      const durationMs = Date.now() - startTime;
-
-      const filename = `${name || `recording_${Date.now()}`}.gif`;
-      const sessionDir = getSessionDir(getMcpSessionId(), session_id);
-      const recordingsDir = path.join(sessionDir, "recordings");
-      const filePath = path.join(recordingsDir, filename);
-
-      await fs.mkdir(recordingsDir, { recursive: true });
-
-      const result = await renderGif(framesDir, filePath, { fps });
-
-      // Cleanup frames (keep the GIF for diagnostics)
-      await fs.rm(framesDir, { recursive: true, force: true });
-      session.recording = undefined;
-
-      const originalFrames = frameCount;
-      log(`[shellwright] Recording saved: ${filePath} (${result.frameCount}/${originalFrames} frames, ${result.duplicatesSkipped} deduplicated, ${durationMs}ms)`);
-
-      const downloadUrl = getDownloadUrl(getMcpSessionId(), session_id, "recordings", filename);
-      const output = {
-        filename,
-        download_url: downloadUrl,
-        frame_count: result.frameCount,
-        duration_ms: durationMs,
-        hint: "Use curl -o <filename> <download_url> to save the file"
-      };
-      logToolCall("shell_record_stop", { session_id, name }, output);
-
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(output) }],
-      };
-    }
+    shellRecordStopSchema,
+    async (params) => shellRecordStop(params, toolContext)
   );
 
   registerPrompts(server);
