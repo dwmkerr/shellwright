@@ -159,7 +159,7 @@ export function bufferToSvg(
   }
 
   // Render cursor if visible
-  if (terminal.modes.showCursor) {
+  if ((terminal.modes as { showCursor?: boolean }).showCursor) {
     const cursorX = buffer.cursorX;
     const cursorY = buffer.cursorY;
 
