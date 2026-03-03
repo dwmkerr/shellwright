@@ -2,8 +2,8 @@ import type { Theme } from "../themes.js";
 import type { BorderResult } from "./types.js";
 
 const TITLE_BAR_HEIGHT = 28;
-const SIDE_PADDING = 12;
-const BOTTOM_PADDING = 6;
+const SIDE_PADDING = 0;
+const BOTTOM_PADDING = 0;
 const CORNER_RADIUS = 8;
 const SHADOW_PADDING = 16;
 
@@ -59,7 +59,7 @@ export function macosBorder(
   ).join("\n");
 
   const titleSvg = title
-    ? `  <text x="${outerWidth / 2}" y="18" fill="${titleColor}" font-size="12" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, sans-serif">${title}</text>`
+    ? `  <text x="${outerWidth / 2}" y="18" fill="${titleColor}" font-size="12" text-anchor="middle" font-family="Arial, Helvetica, -apple-system, BlinkMacSystemFont, sans-serif">${title}</text>`
     : "";
 
   const beforeContent = `<g transform="translate(${SHADOW_PADDING}, ${SHADOW_PADDING})" filter="url(#shadow)">
