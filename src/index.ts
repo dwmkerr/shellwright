@@ -146,21 +146,37 @@ interface RecordingState {
   fps: number;
 }
 
-interface Session {
+/** Common fields for all session types */
+interface BaseSession {
   id: string;
-  pty?: pty.IPty;
   cols: number;
   rows: number;
-  buffer: string[];
+  /** Xterm.js terminal emulator for rendering */
   terminal: InstanceType<typeof Terminal>;
   theme: Theme;
   recording?: RecordingState;
-  attached?: {
-    tmuxPane: string;
-    tty: string;
-    captureInterval?: ReturnType<typeof setInterval>;
-  };
 }
+
+/** Session spawned via shell_start - owns a PTY, can send input */
+interface SpawnedSession extends BaseSession {
+  type: 'spawned';
+  pty: pty.IPty;
+  /** Raw terminal data buffer */
+  buffer: string[];
+}
+
+/** Session attached via shell_attach - reads from tmux, capture only */
+interface AttachedSession extends BaseSession {
+  type: 'attached';
+  /** Tmux pane identifier (e.g., "%5") */
+  tmuxPane: string;
+  /** TTY device path (e.g., "/dev/ttys001") */
+  tty: string;
+  /** Interval that polls tmux and updates the terminal buffer */
+  captureInterval?: ReturnType<typeof setInterval>;
+}
+
+type Session = SpawnedSession | AttachedSession;
 
 const sessions = new Map<string, Session>();
 const transports: { [sessionId: string]: StreamableHTTPServerTransport } = {};
@@ -315,7 +331,8 @@ const createServer = (getMcpSessionId: () => string | undefined) => {
         allowProposedApi: true,
       });
 
-      const session: Session = {
+      const session: SpawnedSession = {
+        type: 'spawned',
         id,
         pty: ptyProcess,
         cols: termCols,
@@ -365,7 +382,7 @@ Tips:
         throw new Error(`[shell_send] error: session not found: ${session_id}`);
       }
 
-      if (session.attached || !session.pty) {
+      if (session.type !== 'spawned') {
         throw new Error(`[shell_send] error: cannot send input to attached sessions`);
       }
 
@@ -401,7 +418,7 @@ Tips:
         throw new Error(`Session not found: ${session_id}`);
       }
 
-      let content = session.buffer.join("");
+      let content = session.type === 'spawned' ? session.buffer.join("") : "";
       if (!raw) {
         content = stripAnsi(content);
       }
@@ -484,7 +501,7 @@ Tips:
         throw new Error(`[shell_stop] error: session not found: ${session_id}`);
       }
 
-      if (session.attached) {
+      if (session.type !== 'spawned') {
         throw new Error(`[shell_stop] error: use shell_detach for attached sessions`);
       }
 
@@ -493,7 +510,7 @@ Tips:
         clearInterval(session.recording.interval);
       }
 
-      session.pty?.kill();
+      session.pty.kill();
       sessions.delete(session_id);
       log(`[shellwright] Stopped session ${session_id}`);
 
@@ -536,31 +553,28 @@ Tips:
         allowProposedApi: true,
       });
 
-      const session: Session = {
+      const session: AttachedSession = {
+        type: 'attached',
         id,
         cols,
         rows,
-        buffer: [],
         terminal,
         theme: currentTheme,
-        attached: {
-          tmuxPane,
-          tty,
-        },
+        tmuxPane,
+        tty,
       };
 
       // Start continuous capture from tmux pane
       const captureAndUpdate = () => {
         const content = captureTmuxPane(tmuxPane);
         if (content) {
-          session.buffer = [content];
           terminal.reset();
           terminal.write(content);
         }
       };
 
       captureAndUpdate();
-      session.attached!.captureInterval = setInterval(captureAndUpdate, 100);
+      session.captureInterval = setInterval(captureAndUpdate, 100);
 
       sessions.set(id, session);
       log(`[shellwright] Attached session ${id} to ${tmuxPane} (${tty})`);
@@ -586,13 +600,13 @@ Tips:
         throw new Error(`[shell_detach] error: session not found: ${session_id}`);
       }
 
-      if (!session.attached) {
+      if (session.type !== 'attached') {
         throw new Error(`[shell_detach] error: use shell_stop for spawned sessions`);
       }
 
       // Stop capture interval
-      if (session.attached.captureInterval) {
-        clearInterval(session.attached.captureInterval);
+      if (session.captureInterval) {
+        clearInterval(session.captureInterval);
       }
 
       // Stop recording if active
