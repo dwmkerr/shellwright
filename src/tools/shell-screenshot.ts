@@ -25,7 +25,7 @@ export async function shellScreenshot(
     throw new Error(`Session not found: ${session_id}`);
   }
 
-  const baseName = name || `screenshot_${Date.now()}`;
+  const baseName = name?.replace(/\.png$/i, "") || `screenshot_${Date.now()}`;
   const filename = `${baseName}.png`;
   const sessionDir = context.getSessionDir(context.getMcpSessionId(), session_id);
   const screenshotDir = path.join(sessionDir, "screenshots");

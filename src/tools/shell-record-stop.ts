@@ -27,7 +27,8 @@ export async function shellRecordStop(
   const { framesDir, frameCount, fps, startTime } = session.recording;
   const durationMs = Date.now() - startTime;
 
-  const filename = `${name || `recording_${Date.now()}`}.gif`;
+  const baseName = name?.replace(/\.gif$/i, "") || `recording_${Date.now()}`;
+  const filename = `${baseName}.gif`;
   const sessionDir = context.getSessionDir(context.getMcpSessionId(), session_id);
   const recordingsDir = path.join(sessionDir, "recordings");
   const filePath = path.join(recordingsDir, filename);
