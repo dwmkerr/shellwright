@@ -30,17 +30,22 @@ function getShellwrightRoot(): string {
 
 const ROOT_DIR = getShellwrightRoot();
 
+interface Artifact {
+  filename: string;
+  localPath: string;
+}
+
 interface ScenarioResult {
   name: string;
   success: boolean;
-  gifPath?: string;
+  artifacts: Artifact[];
   error?: string;
 }
 
-async function downloadGif(url: string, destPath: string): Promise<void> {
+async function downloadArtifact(url: string, destPath: string): Promise<void> {
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`Failed to download GIF: ${response.status}`);
+    throw new Error(`Failed to download artifact: ${response.status}`);
   }
   const buffer = await response.arrayBuffer();
   await fs.writeFile(destPath, Buffer.from(buffer));
@@ -55,13 +60,11 @@ async function runScenario(scenarioPath: string): Promise<ScenarioResult> {
 
   try {
     let toolsCalled = 0;
-    let gifPath: string | null = null;
+    const artifacts: Artifact[] = [];
     const mcpScript = path.join(ROOT_DIR, "dist/index.js");
     console.log(`  Starting agent with MCP server: ${mcpScript}`);
     for await (const message of query({
-      prompt: `You have access to shellwright MCP tools for terminal recording. Use the shellwright tools (mcp__shellwright__shell_start, mcp__shellwright__shell_send, mcp__shellwright__shell_record_start, mcp__shellwright__shell_record_stop, etc.) to execute the following scenario.
-
-Save the recording as "recording" (it will become recording.gif).
+      prompt: `You have access to shellwright MCP tools for terminal recording and screenshots. Use the shellwright tools (mcp__shellwright__shell_start, mcp__shellwright__shell_send, mcp__shellwright__shell_record_start, mcp__shellwright__shell_record_stop, mcp__shellwright__shell_screenshot, etc.) to execute the following scenario.
 
 ${prompt}`,
       options: {
@@ -99,12 +102,12 @@ ${prompt}`,
             } catch {
               continue; // Not JSON, skip
             }
-            if (parsed.download_url && !gifPath) {
-              const dest = path.join(scenarioPath, "recording.gif");
-              console.log(`  Downloading: ${parsed.download_url}`);
-              await downloadGif(parsed.download_url, dest);
-              gifPath = dest;
-              console.log(`  ✓ Recording saved: ${gifPath}`);
+            if (parsed.download_url && parsed.filename) {
+              const dest = path.join(scenarioPath, parsed.filename);
+              console.log(`  Downloading: ${parsed.download_url} → ${parsed.filename}`);
+              await downloadArtifact(parsed.download_url, dest);
+              artifacts.push({ filename: parsed.filename, localPath: dest });
+              console.log(`  ✓ Artifact saved: ${dest}`);
             }
           }
         }
@@ -116,14 +119,14 @@ ${prompt}`,
       }
     }
 
-    if (gifPath) {
-      return { name: scenarioName, success: true, gifPath };
+    if (artifacts.length > 0) {
+      return { name: scenarioName, success: true, artifacts };
     }
 
-    return { name: scenarioName, success: false, error: "No recording generated" };
+    return { name: scenarioName, success: false, artifacts: [], error: "No artifacts generated" };
   } catch (err) {
     console.error(`  ✗ Error: ${(err as Error).message}`);
-    return { name: scenarioName, success: false, error: (err as Error).message };
+    return { name: scenarioName, success: false, artifacts: [], error: (err as Error).message };
   }
 }
 
@@ -169,7 +172,10 @@ async function main() {
   console.log("\n=== Results ===");
   for (const r of results) {
     const status = r.success ? "✓" : "✗";
-    console.log(`${status} ${r.name}: ${r.success ? r.gifPath : r.error}`);
+    const detail = r.success
+      ? r.artifacts.map((a) => a.filename).join(", ")
+      : r.error;
+    console.log(`${status} ${r.name}: ${detail}`);
   }
 
   console.log("\n=== Logs ===");

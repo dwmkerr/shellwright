@@ -7,6 +7,7 @@
 
 import type { Terminal } from "@xterm/headless";
 import { Theme, oneDark } from "./themes.js";
+import { getBorder } from "./borders/index.js";
 
 /**
  * Build the 256-color palette using theme colors for indices 0-15
@@ -40,6 +41,10 @@ interface SvgOptions {
   fontSize?: number;
   fontFamily?: string;
   theme?: Theme;
+  border?: {
+    style: string;
+    title?: string;
+  };
 }
 
 const DEFAULT_OPTIONS = {
@@ -195,10 +200,26 @@ export function bufferToSvg(
     }
   }
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" font-family="${opts.fontFamily}" font-size="${opts.fontSize}">
-<rect width="100%" height="100%" fill="${theme.background}"/>
+  const terminalSvg = `<rect width="${width}" height="${height}" fill="${theme.background}"/>
 <g fill="${theme.foreground}">
 ${lines.join("\n")}
+</g>`;
+
+  if (opts.border) {
+    const borderFn = getBorder(opts.border.style);
+    const border = borderFn(width, height, theme, opts.border.title);
+
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${border.width}" height="${border.height}" font-family="${opts.fontFamily}" font-size="${opts.fontSize}">
+${border.defs}
+${border.beforeContent}
+<g transform="${border.contentTransform}">
+${terminalSvg}
 </g>
+${border.afterContent}
+</svg>`;
+  }
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" font-family="${opts.fontFamily}" font-size="${opts.fontSize}">
+${terminalSvg}
 </svg>`;
 }

@@ -9,19 +9,23 @@ import { ToolContext } from "./types.js";
 export const shellScreenshotSchema = {
   session_id: z.string().describe("Session ID"),
   name: z.string().optional().describe("Screenshot name (default: screenshot_{timestamp})"),
+  border: z.object({
+    style: z.enum(["macos"]).describe("Border style"),
+    title: z.string().optional().describe("Title text in the title bar"),
+  }).optional().describe("Optional window border decoration"),
 };
 
 export async function shellScreenshot(
-  params: { session_id: string; name?: string },
+  params: { session_id: string; name?: string; border?: { style: "macos"; title?: string } },
   context: ToolContext
 ) {
-  const { session_id, name } = params;
+  const { session_id, name, border } = params;
   const session = context.sessions.get(session_id);
   if (!session) {
     throw new Error(`Session not found: ${session_id}`);
   }
 
-  const baseName = name || `screenshot_${Date.now()}`;
+  const baseName = name?.replace(/\.png$/i, "") || `screenshot_${Date.now()}`;
   const filename = `${baseName}.png`;
   const sessionDir = context.getSessionDir(context.getMcpSessionId(), session_id);
   const screenshotDir = path.join(sessionDir, "screenshots");
@@ -29,10 +33,11 @@ export async function shellScreenshot(
   await fs.mkdir(screenshotDir, { recursive: true });
 
   // Generate all formats from xterm buffer
-  const svg = bufferToSvg(session.terminal, session.cols, session.rows, { 
-    theme: session.theme, 
-    fontSize: context.config.FONT_SIZE, 
-    fontFamily: context.config.FONT_FAMILY 
+  const svg = bufferToSvg(session.terminal, session.cols, session.rows, {
+    theme: session.theme,
+    fontSize: context.config.FONT_SIZE,
+    fontFamily: context.config.FONT_FAMILY,
+    border,
   });
   const png = new Resvg(svg, context.resvgOptions).render().asPng();
   const ansi = bufferToAnsi(session.terminal, session.cols, session.rows, { theme: session.theme });

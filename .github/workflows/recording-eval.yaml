@@ -89,5 +89,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: recordings
-          path: evaluations/scenarios/*/recording.gif
+          path: |
+            evaluations/scenarios/*/*.gif
+            evaluations/scenarios/*/*.png
           if-no-files-found: warn
