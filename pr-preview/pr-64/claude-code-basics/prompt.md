@@ -17,7 +17,7 @@ Create a recording demonstrating Claude Code opening and responding to a greetin
 6. Wait for Claude to respond (may take 10-20 seconds)
 7. Once Claude responds, type `/exit` and press Enter to quit
 8. Wait 1 second for clean exit
-9. Stop recording and save as `recording.gif`
+9. Stop recording and save as `recording`
 
 ## Expected Result
 
