@@ -16,8 +16,9 @@
     table { width: 100%; border-collapse: collapse; }
     th, td { padding: 12px; border: 1px solid #30363d; text-align: left; vertical-align: top; }
     th { background: #161b22; color: #58a6ff; }
-    .scenario { width: 120px; font-weight: bold; }
-    .preview { width: 29%; }
+    .scenario { width: 120px; font-weight: bold; vertical-align: middle; }
+    .artifact { width: 120px; font-size: 13px; color: #8b949e; font-family: monospace; }
+    .preview { width: 25%; }
     .preview img { max-width: 100%; border-radius: 6px; margin-top: 8px; }
     .size { font-size: 12px; color: #8b949e; }
     .missing { color: #f85149; font-style: italic; }
@@ -27,12 +28,13 @@
   <h1>Recording Evaluation</h1>
   <div class="note">
     <strong>Baselines:</strong> Local = developer machine, CI/CD = previous CI run.<br>
-    To update CI/CD baseline: download PR recording and commit as <code>baseline-cicd.gif</code>
+    To update a baseline: download the PR artifact and commit as <code>baseline-local-&lt;name&gt;.ext</code> or <code>baseline-cicd-&lt;name&gt;.ext</code>
   </div>
   <table>
     <thead>
       <tr>
         <th>Scenario</th>
+        <th>Artifact</th>
         <th>Baseline (Local)</th>
         <th>Baseline (CI/CD)</th>
         <th>PR</th>
@@ -40,8 +42,12 @@
     </thead>
     <tbody>
       {{#each scenarios}}
+      {{#each artifacts}}
       <tr>
-        <td class="scenario"><strong>{{name}}</strong></td>
+        {{#if @first}}
+        <td class="scenario" rowspan="{{../artifactCount}}"><strong>{{../name}}</strong></td>
+        {{/if}}
+        <td class="artifact">{{artifactName}}</td>
         <td class="preview">
           <div class="size">{{#if baselineLocalSize}}{{baselineLocalSize}}{{else}}Missing{{/if}}</div>
           {{#if baselineLocalSize}}
@@ -61,12 +67,19 @@
         <td class="preview">
           <div class="size">{{#if recordedSize}}{{recordedSize}}{{else}}Missing{{/if}}</div>
           {{#if recordedSize}}
-            <img src="./{{name}}/recording.gif" alt="recorded">
+            <img src="{{recordedPath}}" alt="recorded">
           {{else}}
             <span class="missing">Not generated</span>
           {{/if}}
         </td>
       </tr>
+      {{/each}}
+      {{#unless artifacts.length}}
+      <tr>
+        <td class="scenario"><strong>{{name}}</strong></td>
+        <td class="artifact" colspan="4"><span class="missing">No artifacts found</span></td>
+      </tr>
+      {{/unless}}
       {{/each}}
     </tbody>
   </table>
