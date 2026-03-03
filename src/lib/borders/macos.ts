@@ -3,6 +3,7 @@ import type { BorderResult } from "./types.js";
 
 const TITLE_BAR_HEIGHT = 28;
 const SIDE_PADDING = 12;
+const BOTTOM_PADDING = 6;
 const CORNER_RADIUS = 8;
 const SHADOW_PADDING = 16;
 
@@ -35,7 +36,7 @@ export function macosBorder(
   title?: string
 ): BorderResult {
   const outerWidth = innerWidth + SIDE_PADDING * 2;
-  const outerHeight = innerHeight + TITLE_BAR_HEIGHT;
+  const outerHeight = innerHeight + TITLE_BAR_HEIGHT + BOTTOM_PADDING;
 
   // Total SVG dimensions include shadow bleed
   const width = outerWidth + SHADOW_PADDING * 2;
@@ -48,6 +49,9 @@ export function macosBorder(
   <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
     <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.3"/>
   </filter>
+  <clipPath id="window-clip">
+    <rect width="${outerWidth}" height="${outerHeight}" rx="${CORNER_RADIUS}" ry="${CORNER_RADIUS}"/>
+  </clipPath>
 </defs>`;
 
   const trafficLightsSvg = TRAFFIC_LIGHTS.map(
@@ -59,15 +63,17 @@ export function macosBorder(
     : "";
 
   const beforeContent = `<g transform="translate(${SHADOW_PADDING}, ${SHADOW_PADDING})" filter="url(#shadow)">
+  <g clip-path="url(#window-clip)">
   <rect width="${outerWidth}" height="${outerHeight}" rx="${CORNER_RADIUS}" ry="${CORNER_RADIUS}" fill="${theme.background}"/>
   <rect width="${outerWidth}" height="${TITLE_BAR_HEIGHT}" rx="${CORNER_RADIUS}" ry="${CORNER_RADIUS}" fill="${titleBarBg}"/>
   <rect y="${TITLE_BAR_HEIGHT - CORNER_RADIUS}" width="${outerWidth}" height="${CORNER_RADIUS}" fill="${titleBarBg}"/>
 ${trafficLightsSvg}
 ${titleSvg}`;
 
-  const contentTransform = `translate(${SHADOW_PADDING + SIDE_PADDING}, ${SHADOW_PADDING + TITLE_BAR_HEIGHT})`;
+  const contentTransform = `translate(${SIDE_PADDING}, ${TITLE_BAR_HEIGHT})`;
 
-  const afterContent = `</g>`;
+  const afterContent = `  </g>
+</g>`;
 
   return { width, height, contentTransform, defs, beforeContent, afterContent };
 }
