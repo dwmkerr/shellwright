@@ -202,7 +202,7 @@ Tips:
 
   server.tool(
     "shell_screenshot",
-    "Capture terminal screenshot as PNG. Returns a download_url - use curl to save the file locally (e.g., curl -o screenshot.png <url>)",
+    "Capture terminal screenshot as PNG and SVG. Returns png_url and svg_url - use curl to save (e.g., curl -o screenshot.png <png_url>)",
     shellScreenshotSchema,
     async (params) => shellScreenshot(params, toolContext)
   );
