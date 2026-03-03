@@ -10,7 +10,7 @@ Verify that the terminal cursor renders correctly in recordings.
 4. Wait 500ms
 5. Press Ctrl+A to move cursor to the beginning of the line
 6. Wait 1 second so the cursor position is clearly visible
-7. Stop recording and save as `recording.gif`
+7. Stop recording and save as `recording`
 8. Stop the session
 
 ## Expected Result

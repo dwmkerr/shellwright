@@ -24,7 +24,7 @@ Create a recording demonstrating how to close vim.
 9. Press Enter to quit
 10. Type `echo "This shell session was recorded by Shellwright!"` and press Enter
 11. Wait 1 second
-12. Stop recording and save as `recording.gif`
+12. Stop recording and save as `recording`
 
 ## Expected Result
 
