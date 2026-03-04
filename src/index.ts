@@ -202,7 +202,7 @@ Tips:
 
   server.tool(
     "shell_screenshot",
-    "Capture terminal screenshot as PNG. Returns a download_url - use curl to save the file locally (e.g., curl -o screenshot.png <url>)",
+    "Capture terminal screenshot as PNG. Optionally add a macOS-style window border with border: { style: \"macos\", title: \"...\" } (off by default). Returns a download_url - use curl to save the file locally (e.g., curl -o screenshot.png <url>)",
     shellScreenshotSchema,
     async (params) => shellScreenshot(params, toolContext)
   );
@@ -216,7 +216,7 @@ Tips:
 
   server.tool(
     "shell_record_start",
-    "Start recording a terminal session (captures frames for GIF/video export)",
+    "Start recording a terminal session (captures frames for GIF export). Optionally add a macOS-style window border to every frame with border: { style: \"macos\", title: \"...\" } (off by default).",
     shellRecordStartSchema,
     async (params) => shellRecordStart(params, toolContext)
   );

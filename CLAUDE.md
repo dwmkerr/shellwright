@@ -32,6 +32,10 @@ npm run dev       # Development with hot-reload
 - **PTY** - Uses `node-pty` for pseudo-terminal management
 - **File Server** - HTTP file server runs on port 7498 regardless of MCP transport mode (stdio or HTTP). Tool results include `download_url` which is always valid.
 
+## MCP Tools
+
+Tool names, descriptions, and parameters are registered in `src/index.ts` with schemas in `src/tools/`. The README.md [MCP Tools](#mcp-tools) section documents each tool with examples. **Any changes to tool schemas, parameters, or descriptions must be reflected in README.md.**
+
 ## Commit Format
 
 Use conventional commits: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`

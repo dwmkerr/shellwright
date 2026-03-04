@@ -8,13 +8,17 @@ import { ToolContext } from "./types.js";
 export const shellRecordStartSchema = {
   session_id: z.string().describe("Session ID"),
   fps: z.number().optional().describe("Frames per second (default: 10, max: 30)"),
+  border: z.object({
+    style: z.enum(["macos"]).describe("Border style"),
+    title: z.string().optional().describe("Title text in the title bar"),
+  }).optional().describe("Optional window border decoration applied to every frame"),
 };
 
 export async function shellRecordStart(
-  params: { session_id: string; fps?: number },
+  params: { session_id: string; fps?: number; border?: { style: "macos"; title?: string } },
   context: ToolContext
 ) {
-  const { session_id, fps } = params;
+  const { session_id, fps, border } = params;
   const session = context.sessions.get(session_id);
   if (!session) {
     throw new Error(`Session not found: ${session_id}`);
@@ -34,14 +38,16 @@ export async function shellRecordStart(
     framesDir,
     frameCount: 0,
     fps: recordingFps,
+    border,
     interval: setInterval(async () => {
       if (!session.recording) return;
 
       const frameNum = session.recording.frameCount++;
-      const svg = bufferToSvg(session.terminal, session.cols, session.rows, { 
-        theme: session.theme, 
-        fontSize: context.config.FONT_SIZE, 
-        fontFamily: context.config.FONT_FAMILY 
+      const svg = bufferToSvg(session.terminal, session.cols, session.rows, {
+        theme: session.theme,
+        fontSize: context.config.FONT_SIZE,
+        fontFamily: context.config.FONT_FAMILY,
+        border,
       });
       const png = new Resvg(svg, context.resvgOptions).render().asPng();
       const framePath = path.join(framesDir, `frame${String(frameNum).padStart(6, "0")}.png`);

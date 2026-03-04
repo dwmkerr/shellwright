@@ -117,6 +117,12 @@ Open [`k9s`](https://k9scli.io/) and show [Ark](https://github.com/mckinsey/agen
 
 ![Screenshot: Examples - K9S Agents](./docs/examples/k9s-agents.gif)
 
+Take a bordered screenshot:
+
+> Open Claude Code. Take a screenshot with a macOS window border titled "Shellwright".
+
+![Screenshot: Examples - Bordered Screenshot](./docs/examples/claude-code-bordered.png)
+
 Use [`htop`](https://github.com/htop-dev/htop):
 
 > Open htop and show the most resource intensive process.
@@ -280,12 +286,13 @@ drwxr-xr-x 10 user staff  320 Dec 18 09:00 ..
 
 ### **shell_screenshot**
 
-Capture terminal as PNG. Also saves SVG, ANSI, and plain text versions:
+Capture terminal as PNG. Also saves SVG, ANSI, and plain text versions. Pass `name` without extension (`.png` is added automatically). Optionally add a macOS-style window border (off by default):
 
 ```json
 {
   "session_id": "shell-session-a1b2c3",
-  "name": "my-screenshot"
+  "name": "my-screenshot",
+  "border": { "style": "macos", "title": "Terminal" }
 }
 ```
 
@@ -301,12 +308,13 @@ The response contains a `download_url` for curl to save the file locally:
 
 ### **shell_record_start**
 
-Start recording frames for GIF export. Frames are captured at the specified FPS (default 10, max 30, compression occurs by deduplicating identical frames):
+Start recording frames for GIF export. Frames are captured at the specified FPS (default 10, max 30, compression occurs by deduplicating identical frames). The optional `border` parameter (same as [`shell_screenshot`](#shell_screenshot)) applies window chrome to every frame:
 
 ```json
 {
   "session_id": "shell-session-a1b2c3",
-  "fps": 10
+  "fps": 10,
+  "border": { "style": "macos", "title": "Terminal" }
 }
 ```
 
