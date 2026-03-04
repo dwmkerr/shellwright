@@ -216,7 +216,7 @@ Tips:
 
   server.tool(
     "shell_record_start",
-    "Start recording a terminal session (captures frames for GIF/video export)",
+    "Start recording a terminal session (captures frames for GIF export). Optionally add a window border to every frame.",
     shellRecordStartSchema,
     async (params) => shellRecordStart(params, toolContext)
   );

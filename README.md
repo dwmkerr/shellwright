@@ -331,6 +331,27 @@ Start recording frames for GIF export. Frames are captured at the specified FPS 
 }
 ```
 
+Add a macOS-style window border to every frame:
+
+```json
+{
+  "session_id": "shell-session-a1b2c3",
+  "fps": 10,
+  "border": {
+    "style": "macos",
+    "title": "Terminal"
+  }
+}
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `session_id` | string | Session ID (required) |
+| `fps` | number | Frames per second (default: 10, max: 30) |
+| `border` | object | Optional window border applied to every frame |
+| `border.style` | `"macos"` | Border style — macOS window chrome with traffic lights and drop shadow |
+| `border.title` | string | Title text in the title bar |
+
 The response confirms recording has started:
 
 ```json

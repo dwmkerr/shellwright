@@ -8,6 +8,7 @@ export interface RecordingState {
   frameCount: number;
   interval: ReturnType<typeof setInterval>;
   fps: number;
+  border?: { style: string; title?: string };
 }
 
 export interface Session {
