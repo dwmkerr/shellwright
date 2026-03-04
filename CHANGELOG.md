@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.10](https://github.com/dwmkerr/shellwright/compare/v0.1.9...v0.1.10) (2026-03-04)
+
+
+### Features
+
+* broaden eval framework to support screenshots and borders ([#64](https://github.com/dwmkerr/shellwright/issues/64)) ([36d8490](https://github.com/dwmkerr/shellwright/commit/36d8490334db1c9f9d9a10c52e8416d07a4fdfe5))
+
 ## [0.1.9](https://github.com/dwmkerr/shellwright/compare/v0.1.8...v0.1.9) (2026-02-13)
 
 
