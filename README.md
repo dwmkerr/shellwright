@@ -322,35 +322,15 @@ The response contains a `download_url` for curl to save the file locally:
 
 ### **shell_record_start**
 
-Start recording frames for GIF export. Frames are captured at the specified FPS (default 10, max 30, compression occurs by deduplicating identical frames):
-
-```json
-{
-  "session_id": "shell-session-a1b2c3",
-  "fps": 10
-}
-```
-
-Add a macOS-style window border to every frame:
+Start recording frames for GIF export. Frames are captured at the specified FPS (default 10, max 30, compression occurs by deduplicating identical frames). The optional `border` parameter (same as [`shell_screenshot`](#shell_screenshot)) applies window chrome to every frame:
 
 ```json
 {
   "session_id": "shell-session-a1b2c3",
   "fps": 10,
-  "border": {
-    "style": "macos",
-    "title": "Terminal"
-  }
+  "border": { "style": "macos", "title": "Terminal" }
 }
 ```
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `session_id` | string | Session ID (required) |
-| `fps` | number | Frames per second (default: 10, max: 30) |
-| `border` | object | Optional window border applied to every frame |
-| `border.style` | `"macos"` | Border style — macOS window chrome with traffic lights and drop shadow |
-| `border.title` | string | Title text in the title bar |
 
 The response confirms recording has started:
 
