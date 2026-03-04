@@ -117,6 +117,12 @@ Open [`k9s`](https://k9scli.io/) and show [Ark](https://github.com/mckinsey/agen
 
 ![Screenshot: Examples - K9S Agents](./docs/examples/k9s-agents.gif)
 
+Take a bordered screenshot:
+
+> Open Claude Code. Take a screenshot with a macOS window border titled "Shellwright".
+
+![Screenshot: Examples - Bordered Screenshot](./docs/examples/claude-code-bordered.png)
+
 Use [`htop`](https://github.com/htop-dev/htop):
 
 > Open htop and show the most resource intensive process.
@@ -280,35 +286,15 @@ drwxr-xr-x 10 user staff  320 Dec 18 09:00 ..
 
 ### **shell_screenshot**
 
-Capture terminal as PNG. Also saves SVG, ANSI, and plain text versions. Pass `name` without extension (`.png` is added automatically):
-
-```json
-{
-  "session_id": "shell-session-a1b2c3",
-  "name": "my-screenshot"
-}
-```
-
-Add a macOS-style window border with optional title text:
+Capture terminal as PNG. Also saves SVG, ANSI, and plain text versions. Pass `name` without extension (`.png` is added automatically). Optionally add a macOS-style window border (off by default):
 
 ```json
 {
   "session_id": "shell-session-a1b2c3",
   "name": "my-screenshot",
-  "border": {
-    "style": "macos",
-    "title": "Terminal"
-  }
+  "border": { "style": "macos", "title": "Terminal" }
 }
 ```
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `session_id` | string | Session ID (required) |
-| `name` | string | Screenshot name without extension (default: `screenshot_{timestamp}`) |
-| `border` | object | Optional window border decoration |
-| `border.style` | `"macos"` | Border style — macOS window chrome with traffic lights and drop shadow |
-| `border.title` | string | Title text in the title bar |
 
 The response contains a `download_url` for curl to save the file locally:
 
