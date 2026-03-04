@@ -280,7 +280,7 @@ drwxr-xr-x 10 user staff  320 Dec 18 09:00 ..
 
 ### **shell_screenshot**
 
-Capture terminal as PNG. Also saves SVG, ANSI, and plain text versions:
+Capture terminal as PNG. Also saves SVG, ANSI, and plain text versions. Pass `name` without extension (`.png` is added automatically):
 
 ```json
 {
@@ -288,6 +288,27 @@ Capture terminal as PNG. Also saves SVG, ANSI, and plain text versions:
   "name": "my-screenshot"
 }
 ```
+
+Add a macOS-style window border with optional title text:
+
+```json
+{
+  "session_id": "shell-session-a1b2c3",
+  "name": "my-screenshot",
+  "border": {
+    "style": "macos",
+    "title": "Terminal"
+  }
+}
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `session_id` | string | Session ID (required) |
+| `name` | string | Screenshot name without extension (default: `screenshot_{timestamp}`) |
+| `border` | object | Optional window border decoration |
+| `border.style` | `"macos"` | Border style — macOS window chrome with traffic lights and drop shadow |
+| `border.title` | string | Title text in the title bar |
 
 The response contains a `download_url` for curl to save the file locally:
 
