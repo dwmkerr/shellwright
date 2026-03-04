@@ -30,3 +30,5 @@ The `recording-eval.yaml` workflow runs on every PR:
 2. Generates comparison table
 3. Uploads recordings as artifacts
 4. Posts summary to PR
+
+See the [demo/evaluations PR](https://github.com/dwmkerr/shellwright/pulls?q=is%3Apr+head%3Ademo%2Fevaluations) for a live preview.
