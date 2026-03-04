@@ -80,9 +80,9 @@ jobs:
         with:
           header: recording-eval
           message: |
-            ## Recording Evaluation
-
-            🎬 **[View recording comparisons](${{ steps.preview.outputs.preview-url }})**
+            ## Evidence
+            ### Screenshots and Recordings
+            **[View Recordings & Review](${{ steps.preview.outputs.preview-url }})**
 
       - name: Upload recordings
         if: github.event.action != 'closed'
