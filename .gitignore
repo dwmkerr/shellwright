@@ -9,3 +9,4 @@ output/
 .mcp.json
 .playwright-mcp/
 .worktrees/
+scratch/
