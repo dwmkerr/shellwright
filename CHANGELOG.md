@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.11](https://github.com/dwmkerr/shellwright/compare/v0.1.10...v0.1.11) (2026-03-10)
+
+
+### Features
+
+* format-specific download URLs for screenshots and recordings ([#70](https://github.com/dwmkerr/shellwright/issues/70)) ([b490ec3](https://github.com/dwmkerr/shellwright/commit/b490ec3849517b6f7a01412c2efd7e6309628c7f))
+* new hero recording with macOS border and improved pacing ([#68](https://github.com/dwmkerr/shellwright/issues/68)) ([f3f2ed2](https://github.com/dwmkerr/shellwright/commit/f3f2ed23ec3d8de3c38ca49c0d488d481cd045d2))
+
 ## [0.1.10](https://github.com/dwmkerr/shellwright/compare/v0.1.9...v0.1.10) (2026-03-04)
 
 
