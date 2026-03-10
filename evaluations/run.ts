@@ -88,7 +88,7 @@ ${prompt}`,
           }
         }
       } else if (message.type === "user") {
-        // Capture tool results to extract download_url
+        // Capture tool results to extract download URLs
         for (const block of message.message.content) {
           if (block.type === "tool_result") {
             const content = typeof block.content === "string"
@@ -102,11 +102,22 @@ ${prompt}`,
             } catch {
               continue; // Not JSON, skip
             }
-            if (parsed.download_url && parsed.filename) {
-              const dest = path.join(scenarioPath, parsed.filename);
-              console.log(`  Downloading: ${parsed.download_url} → ${parsed.filename}`);
-              await downloadArtifact(parsed.download_url, dest);
-              artifacts.push({ filename: parsed.filename, localPath: dest });
+            const downloadUrls: { url: string; filename: string }[] = [];
+            if (parsed.download_png_url && parsed.filename) {
+              downloadUrls.push({ url: parsed.download_png_url, filename: parsed.filename });
+            }
+            if (parsed.download_svg_url && parsed.filename) {
+              const svgFilename = parsed.filename.replace(/\.png$/i, ".svg");
+              downloadUrls.push({ url: parsed.download_svg_url, filename: svgFilename });
+            }
+            if (parsed.download_gif_url && parsed.filename) {
+              downloadUrls.push({ url: parsed.download_gif_url, filename: parsed.filename });
+            }
+            for (const { url, filename } of downloadUrls) {
+              const dest = path.join(scenarioPath, filename);
+              console.log(`  Downloading: ${url} → ${filename}`);
+              await downloadArtifact(url, dest);
+              artifacts.push({ filename, localPath: dest });
               console.log(`  ✓ Artifact saved: ${dest}`);
             }
           }

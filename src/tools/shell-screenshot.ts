@@ -58,8 +58,15 @@ export async function shellScreenshot(
 
   context.log(`[shellwright] Screenshot saved: ${screenshotDir}/${baseName}.{png,svg,ansi,txt}`);
 
-  const downloadUrl = context.getDownloadUrl(context.getMcpSessionId(), session_id, "screenshots", filename);
-  const output = { filename, download_url: downloadUrl, hint: "Use curl -o <filename> <download_url> to save the file" };
+  const mcpSessionId = context.getMcpSessionId();
+  const pngUrl = context.getDownloadUrl(mcpSessionId, session_id, "screenshots", `${baseName}.png`);
+  const svgUrl = context.getDownloadUrl(mcpSessionId, session_id, "screenshots", `${baseName}.svg`);
+  const output = {
+    filename,
+    download_png_url: pngUrl,
+    download_svg_url: svgUrl,
+    hint: "Use curl -o <filename> <url> to save the file",
+  };
   context.logToolCall("shell_screenshot", { session_id, name }, output);
 
   return {

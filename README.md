@@ -190,7 +190,7 @@ Some configuration can also be provided by the LLM, simply prompt for it:
 | [`shell_start`](#shell_start) | Start a new PTY session |
 | [`shell_send`](#shell_send) | Send input to a session |
 | [`shell_read`](#shell_read) | Read the terminal buffer |
-| [`shell_screenshot`](#shell_screenshot) | Capture terminal as PNG |
+| [`shell_screenshot`](#shell_screenshot) | Capture terminal as PNG and SVG |
 | [`shell_record_start`](#shell_record_start) | Start recording for GIF export |
 | [`shell_record_stop`](#shell_record_stop) | Stop recording and save GIF |
 | [`shell_stop`](#shell_stop) | Stop a PTY session |
@@ -286,7 +286,7 @@ drwxr-xr-x 10 user staff  320 Dec 18 09:00 ..
 
 ### **shell_screenshot**
 
-Capture terminal as PNG. Also saves SVG, ANSI, and plain text versions. Pass `name` without extension (`.png` is added automatically). Optionally add a macOS-style window border (off by default):
+Capture terminal as PNG and SVG. Also saves ANSI and plain text versions. Pass `name` without extension (`.png` is added automatically). Optionally add a macOS-style window border (off by default):
 
 ```json
 {
@@ -296,13 +296,14 @@ Capture terminal as PNG. Also saves SVG, ANSI, and plain text versions. Pass `na
 }
 ```
 
-The response contains a `download_url` for curl to save the file locally:
+The response contains `download_png_url` and `download_svg_url` for curl to save the files locally:
 
 ```json
 {
   "filename": "my-screenshot.png",
-  "download_url": "http://localhost:7498/files/mcp-.../screenshots/my-screenshot.png",
-  "hint": "Use curl -o <filename> <download_url> to save the file"
+  "download_png_url": "http://localhost:7498/files/mcp-.../screenshots/my-screenshot.png",
+  "download_svg_url": "http://localhost:7498/files/mcp-.../screenshots/my-screenshot.svg",
+  "hint": "Use curl -o <filename> <url> to save the file"
 }
 ```
 
@@ -339,13 +340,13 @@ Stop recording and render frames to GIF:
 }
 ```
 
-The response contains a `download_url` for curl to save the file locally:
+The response contains a `download_gif_url` for curl to save the file locally:
 
 ```json
 {
   "filename": "my-recording.gif",
-  "download_url": "http://localhost:7498/files/mcp-.../recordings/my-recording.gif",
-  "hint": "Use curl -o <filename> <download_url> to save the file",
+  "download_gif_url": "http://localhost:7498/files/mcp-.../recordings/my-recording.gif",
+  "hint": "Use curl -o <filename> <url> to save the file",
   "frame_count": 42,
   "duration_ms": 4200
 }
