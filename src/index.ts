@@ -202,7 +202,7 @@ Tips:
 
   server.tool(
     "shell_screenshot",
-    "Capture terminal screenshot as PNG. Optionally add a macOS-style window border with border: { style: \"macos\", title: \"...\" } (off by default). Returns a download_url - use curl to save the file locally (e.g., curl -o screenshot.png <url>)",
+    "Capture terminal screenshot as PNG and SVG. Optionally add a macOS-style window border with border: { style: \"macos\", title: \"...\" } (off by default). Returns download_png_url and download_svg_url - use curl to save (e.g., curl -o screenshot.png <download_png_url>)",
     shellScreenshotSchema,
     async (params) => shellScreenshot(params, toolContext)
   );
