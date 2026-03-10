@@ -223,7 +223,7 @@ Tips:
 
   server.tool(
     "shell_record_stop",
-    "Stop recording and save GIF. Returns a download_url - use curl to save the file locally (e.g., curl -o recording.gif <url>)",
+    "Stop recording and save GIF. Returns download_gif_url - use curl to save the file locally (e.g., curl -o recording.gif <download_gif_url>)",
     shellRecordStopSchema,
     async (params) => shellRecordStop(params, toolContext)
   );

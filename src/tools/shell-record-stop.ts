@@ -47,10 +47,10 @@ export async function shellRecordStop(
   const downloadUrl = context.getDownloadUrl(context.getMcpSessionId(), session_id, "recordings", filename);
   const output = {
     filename,
-    download_url: downloadUrl,
+    download_gif_url: downloadUrl,
     frame_count: result.frameCount,
     duration_ms: durationMs,
-    hint: "Use curl -o <filename> <download_url> to save the file"
+    hint: "Use curl -o <filename> <url> to save the file"
   };
   context.logToolCall("shell_record_stop", { session_id, name }, output);
 

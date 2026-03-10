@@ -35,13 +35,13 @@
 
 ## File Download Flow
 
-Screenshots and recordings return a `download_url` instead of base64 data:
+Screenshots and recordings return format-specific download URLs instead of base64 data:
 
 ```
 1. LLM calls shell_screenshot() or shell_record_stop()
 2. Server saves file to temp directory
-3. Server returns: { filename, download_url, ... }
-4. LLM uses curl to download: curl -o file.png <download_url>
+3. Server returns: { filename, download_png_url, download_svg_url, ... } or { filename, download_gif_url, ... }
+4. LLM uses curl to download: curl -o file.png <download_png_url>
 ```
 
 This avoids token overflow from large base64 payloads.
