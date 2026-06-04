@@ -1,0 +1,19 @@
+# Maintained by openspec-flow. Edit the `uses:` ref to upgrade.
+# Docs: https://github.com/dwmkerr/openspec-flow
+name: openspec-flow
+on:
+  issues:
+    types: [labeled]
+  pull_request:
+    types: [labeled, closed]
+  pull_request_review_comment:
+    types: [created]
+  issue_comment:
+    types: [created]
+jobs:
+  flow:
+    uses: dwmkerr/openspec-flow/.github/workflows/openspec-flow.yml@main
+    secrets:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      OPENSPEC_FLOW_APP_ID: ${{ secrets.OPENSPEC_FLOW_APP_ID || '' }}
+      OPENSPEC_FLOW_PRIVATE_KEY: ${{ secrets.OPENSPEC_FLOW_PRIVATE_KEY || '' }}
