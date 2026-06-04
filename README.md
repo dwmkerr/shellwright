@@ -1,3 +1,7 @@
+<!-- openspec-flow badge-start -->
+[![openspec-flow](https://github.com/dwmkerr/shellwright/actions/workflows/openspec-flow.yml/badge.svg)](https://github.com/dwmkerr/shellwright/actions/workflows/openspec-flow.yml)
+<!-- openspec-flow badge-end -->
+
 <p align="center">
   <h2 align="center"><code>🖥️ shellwright</code></h2>
   <h3 align="center">Playwright for the shell. AI-driven terminal automation, screenshots and video recording.</h3>
@@ -467,3 +471,16 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 ## License
 
 MIT
+
+<!-- openspec-flow install-start -->
+## openspec-flow
+
+This repo uses [openspec-flow](https://github.com/dwmkerr/openspec-flow) to drive spec-driven development from GitHub issues.
+
+1. Open an issue describing the feature, fix, or task.
+2. Add the `openspec:go` label.
+3. openspec-flow opens a **spec PR** (`openspec:spec`). Review, comment, iterate (add `openspec:go` to the PR to re-run). Merge when happy.
+4. openspec-flow opens an **impl PR** (`openspec:impl`). Review, iterate, merge. The originating issue closes automatically.
+
+Required Actions secret: `ANTHROPIC_API_KEY`.
+<!-- openspec-flow install-end -->
