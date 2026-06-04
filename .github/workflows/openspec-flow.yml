@@ -10,6 +10,14 @@ on:
     types: [created]
   issue_comment:
     types: [created]
+# Reusable workflows can only declare permissions UP TO what the caller
+# grants. Without this block the reusable workflow's `contents: write`
+# request is rejected with: "is requesting 'contents: write, issues:
+# write, pull-requests: write', but is only allowed 'contents: read…'".
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
 jobs:
   flow:
     uses: dwmkerr/openspec-flow/.github/workflows/openspec-flow.yml@main
