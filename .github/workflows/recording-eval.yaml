@@ -65,13 +65,24 @@ jobs:
         run: npm run compare
 
       - name: Deploy recordings to GitHub Pages
+        if: github.event.action != 'closed'
         uses: rossjrw/pr-preview-action@v1
         id: preview
         with:
           source-dir: ./evaluations/scenarios/
           preview-branch: gh-pages
           umbrella-dir: pr-preview
-          action: auto
+          action: deploy
+          comment: false
+
+      # Keep previews for merged PRs as an evidence trail; only clean up abandoned PRs
+      - name: Remove preview (closed without merge)
+        if: github.event.action == 'closed' && !github.event.pull_request.merged
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: remove
           comment: false
 
       - name: Comment with preview link
