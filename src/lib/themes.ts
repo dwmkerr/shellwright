@@ -102,28 +102,12 @@ export const nord: Theme = {
   foreground: "#d8dee9",
 };
 
-export const nab: Theme = {
-  name: "nab",
-  type: "dark",
-  description: "Warm burnt orange theme with earthy tones",
-  tip: "Distinctive warm aesthetic, easy on the eyes",
-  ansiColors: [
-    // Standard: black, red, green, yellow, blue, magenta, cyan, white
-    "#4d4d4d", "#c91b00", "#00c200", "#c7c400", "#0225c7", "#c930c7", "#00c5c7", "#c7c7c7",
-    // Bright variants
-    "#686868", "#ff6e67", "#5ffa68", "#fefb67", "#6871ff", "#ff77ff", "#60fdff", "#d4c4a8",
-  ],
-  background: "#c44f17",
-  foreground: "#d4c4a8",
-};
-
 export const themes: Record<string, Theme> = {
   "one-dark": oneDark,
   "one-light": oneLight,
   "dracula": dracula,
   "solarized-dark": solarizedDark,
   "nord": nord,
-  "nab": nab,
 };
 
 export const DEFAULT_THEME = "one-dark";
