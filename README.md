@@ -194,6 +194,7 @@ Some configuration can also be provided by the LLM, simply prompt for it:
 | [`shell_start`](#shell_start) | Start a new PTY session |
 | [`shell_send`](#shell_send) | Send input to a session |
 | [`shell_read`](#shell_read) | Read the terminal buffer |
+| [`shell_wait_for`](#shell_wait_for) | Wait for the buffer to satisfy conditions |
 | [`shell_screenshot`](#shell_screenshot) | Capture terminal as PNG and SVG |
 | [`shell_record_start`](#shell_record_start) | Start recording for GIF export |
 | [`shell_record_stop`](#shell_record_stop) | Stop recording and save GIF |
@@ -258,6 +259,17 @@ Send input to a PTY session. Returns the full terminal buffer (plain text, no AN
 
 The `delay_ms` parameter controls how long to wait after sending input before capturing `bufferAfter` (default: 100ms). Increase for slow commands.
 
+For chat TUIs (e.g. Claude Code) where a trailing `\r` inside pasted text is treated as part of the paste instead of submitting it, use `submit: true` to send Enter as a separate keystroke after the input has settled (`submit_delay_ms`, default 1000ms):
+
+```json
+{
+  "session_id": "shell-session-a1b2c3",
+  "input": "Which agents run in this cluster?",
+  "submit": true,
+  "submit_delay_ms": 1000
+}
+```
+
 The response includes the terminal buffer before and after the input was sent:
 
 ```json
@@ -286,6 +298,32 @@ total 24
 drwxr-xr-x  5 user staff  160 Dec 18 10:00 .
 drwxr-xr-x 10 user staff  320 Dec 18 09:00 ..
 -rw-r--r--  1 user staff 1234 Dec 18 10:00 README.md
+```
+
+### **shell_wait_for**
+
+Wait until the terminal buffer satisfies conditions, instead of polling `shell_read` in a loop. Completes when all given conditions hold: `pattern` matches, `absent_pattern` does not match, and the buffer has been unchanged for `stable_ms`:
+
+```json
+{
+  "session_id": "shell-session-a1b2c3",
+  "absent_pattern": "esc to interrupt| for \\d+s",
+  "stable_ms": 4000,
+  "timeout_ms": 90000
+}
+```
+
+The example above waits for a Claude Code response to finish: the busy marker is gone and the screen has been still for four seconds. See [Recording Claude Code](./docs/recording-claude-code.md) for the full workflow.
+
+The response reports whether the conditions were met and includes the final buffer:
+
+```json
+{
+  "satisfied": true,
+  "timed_out": false,
+  "waited_ms": 38500,
+  "buffer": "..."
+}
 ```
 
 ### **shell_screenshot**
@@ -335,12 +373,13 @@ The response confirms recording has started:
 
 ### **shell_record_stop**
 
-Stop recording and render frames to GIF:
+Stop recording and render frames to GIF. The final frame is held for `hold_last_ms` (default 2000ms, `0` to disable) so the ending doesn't flash past before the GIF loops:
 
 ```json
 {
   "session_id": "shell-session-a1b2c3",
-  "name": "my-recording"
+  "name": "my-recording",
+  "hold_last_ms": 2000
 }
 ```
 

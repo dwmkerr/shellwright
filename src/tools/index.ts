@@ -5,4 +5,5 @@ export { shellScreenshot, shellScreenshotSchema } from "./shell-screenshot.js";
 export { shellStop, shellStopSchema } from "./shell-stop.js";
 export { shellRecordStart, shellRecordStartSchema } from "./shell-record-start.js";
 export { shellRecordStop, shellRecordStopSchema } from "./shell-record-stop.js";
+export { shellWaitFor, shellWaitForSchema } from "./shell-wait-for.js";
 export type { Session, RecordingState, ToolContext } from "./types.js";
