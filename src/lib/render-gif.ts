@@ -11,6 +11,7 @@ import * as crypto from "crypto";
 export interface RenderGifOptions {
   fps?: number;
   loop?: number; // 0 = infinite
+  holdLastMs?: number; // extra display time for the final frame
 }
 
 export interface RenderGifResult {
@@ -95,11 +96,14 @@ export async function renderGif(
   }
 
   if (pendingFrame) {
+    // Hold the final frame so viewers see the end state before the loop
+    // restarts - without this the closing moment flashes past.
+    const finalDelay = pendingFrame.accumulatedDelay + (options.holdLastMs || 0);
     gif.writeFrame(pendingFrame.indexed, width, height, {
       palette: pendingFrame.palette,
-      delay: pendingFrame.accumulatedDelay,
+      delay: finalDelay,
     });
-    totalDurationMs += pendingFrame.accumulatedDelay;
+    totalDurationMs += finalDelay;
     framesWritten++;
   }
 

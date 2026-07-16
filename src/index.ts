@@ -26,6 +26,8 @@ import {
   shellRecordStartSchema,
   shellRecordStop,
   shellRecordStopSchema,
+  shellWaitFor,
+  shellWaitForSchema,
   Session,
   ToolContext,
 } from "./tools/index.js";
@@ -208,6 +210,18 @@ Tips:
   );
 
   server.tool(
+    "shell_wait_for",
+    `Wait until the terminal buffer satisfies conditions, instead of polling shell_read in a loop. Completes when ALL given conditions hold: 'pattern' matches, 'absent_pattern' does not match, and the buffer has been unchanged for 'stable_ms'.
+
+Tips:
+- Wait for a shell prompt: pattern: "\\\\$ $"
+- Wait for a chat TUI (e.g. Claude Code) to finish responding: absent_pattern: "esc to interrupt| for \\\\d+s", stable_ms: 4000
+- Returns { satisfied, timed_out, waited_ms, buffer } - always check 'satisfied'`,
+    shellWaitForSchema,
+    async (params) => shellWaitFor(params, toolContext)
+  );
+
+  server.tool(
     "shell_stop",
     "Stop a PTY session",
     shellStopSchema,
@@ -318,9 +332,22 @@ if (USE_HTTP) {
     await transport.handleRequest(req, res);
   });
 
-  app.listen(PORT, () => {
+  const httpServer = app.listen(PORT, () => {
     log(`[shellwright] MCP server running at http://localhost:${PORT}/mcp`);
     log(`[shellwright] File server running at http://localhost:${PORT}/files`);
+  });
+
+  // Without this, a port conflict is an unhandled 'error' event: the startup
+  // banner prints, then the process dies - and if another shellwright (e.g. a
+  // stdio-mode file server) owns the port, clients get its 404s and blame the
+  // new instance. Fail loudly instead.
+  httpServer.on("error", (err: NodeJS.ErrnoException) => {
+    if (err.code === "EADDRINUSE") {
+      console.error(`[shellwright] Port ${PORT} is already in use (another shellwright instance?). Choose a different port with --port.`);
+    } else {
+      console.error(`[shellwright] Failed to start HTTP server: ${err.message}`);
+    }
+    process.exit(1);
   });
 
   process.on("SIGINT", async () => {
@@ -338,8 +365,18 @@ if (USE_HTTP) {
 
   // Start HTTP file server (needed for download URLs)
   const fileServer = createFileServer();
-  fileServer.listen(PORT, () => {
+  const fileServerInstance = fileServer.listen(PORT, () => {
     log(`[shellwright] File server running at http://localhost:${PORT}/files`);
+  });
+
+  // MCP over stdio still works without the file server; warn rather than die,
+  // but say clearly that download URLs will point at whoever owns the port.
+  fileServerInstance.on("error", (err: NodeJS.ErrnoException) => {
+    if (err.code === "EADDRINUSE") {
+      log(`[shellwright] WARNING: port ${PORT} in use - download URLs will not be served by this instance. Use --port to change.`);
+    } else {
+      log(`[shellwright] WARNING: file server failed to start: ${err.message}`);
+    }
   });
 
   log(`[shellwright] Session: ${stdioSessionId}`);
