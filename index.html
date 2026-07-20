@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>shellwright — Playwright for the shell</title>
+  <meta name="description" content="Playwright for the shell — an MCP server for terminal recording and automation.">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WFTE4NBDQ1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-WFTE4NBDQ1');
+  </script>
+
+  <style>
+    :root {
+      --bg: #0d1117;
+      --panel: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.25rem;
+    }
+    main {
+      width: 100%;
+      max-width: 640px;
+      text-align: center;
+    }
+    .terminal {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      text-align: left;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+      margin-bottom: 2.5rem;
+    }
+    .terminal__bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: #010409;
+      border-bottom: 1px solid var(--border);
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot--r { background: #ff5f56; }
+    .dot--y { background: #ffbd2e; }
+    .dot--g { background: #27c93f; }
+    .terminal__title {
+      margin-left: 8px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .terminal__body {
+      padding: 22px 20px;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+    }
+    .terminal__body .prompt { color: var(--green); }
+    .terminal__body .cmd { color: var(--text); }
+    .terminal__body .comment { color: var(--muted); }
+    .cursor {
+      display: inline-block;
+      width: 9px;
+      height: 1.05em;
+      background: var(--green);
+      vertical-align: text-bottom;
+      animation: blink 1.1s steps(1) infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    h1 {
+      font-family: var(--mono);
+      font-size: 2.4rem;
+      margin: 0 0 0.5rem;
+      letter-spacing: -0.02em;
+    }
+    h1 .prefix { color: var(--muted); }
+    .tagline {
+      font-size: 1.15rem;
+      color: var(--text);
+      margin: 0 0 0.35rem;
+    }
+    .subtagline {
+      color: var(--muted);
+      margin: 0 0 2rem;
+      font-size: 0.98rem;
+    }
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      background: var(--accent);
+      color: #0d1117;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 0.7rem 1.4rem;
+      border-radius: 8px;
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+    .cta:hover { background: #79b8ff; transform: translateY(-1px); }
+    .cta svg { width: 20px; height: 20px; fill: currentColor; }
+
+    .secondary {
+      margin-top: 1.75rem;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .secondary code {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.2rem 0.5rem;
+      color: var(--accent);
+    }
+    footer {
+      margin-top: 3rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 1.9rem; }
+      .tagline { font-size: 1.02rem; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="terminal" aria-hidden="true">
+      <div class="terminal__bar">
+        <span class="dot dot--r"></span>
+        <span class="dot dot--y"></span>
+        <span class="dot dot--g"></span>
+        <span class="terminal__title">shellwright</span>
+      </div>
+      <div class="terminal__body">
+        <div><span class="comment"># let your AI agents drive the terminal</span></div>
+        <div><span class="prompt">$</span> <span class="cmd">npx -y @dwmkerr/shellwright</span></div>
+        <div><span class="prompt">&gt;</span> <span class="cmd">open vim, close it, record it as a video</span> <span class="cursor"></span></div>
+      </div>
+    </div>
+
+    <h1><span class="prefix">🖥️ </span>shellwright</h1>
+    <p class="tagline">Playwright for the shell.</p>
+    <p class="subtagline">An MCP server for terminal recording and automation — give your AI agents screenshots and video of the shell.</p>
+
+    <a class="cta" href="https://github.com/dwmkerr/shellwright">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      View on GitHub
+    </a>
+
+    <p class="secondary">Get started: <code>npx -y @dwmkerr/shellwright</code></p>
+
+    <footer>
+      A project by <a href="https://github.com/dwmkerr">@dwmkerr</a> · used to build recordings for <a href="https://effective-shell.com">Effective Shell</a>
+    </footer>
+  </main>
+</body>
+</html>
