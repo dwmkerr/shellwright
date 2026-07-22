@@ -7,7 +7,7 @@ Automated recording and screenshot evaluations using Claude API with shellwright
 ### Run evaluations locally
 
 ```bash
-# Requires ANTHROPIC_API_KEY
+# Requires ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN (from `claude setup-token`)
 npm run eval
 
 # Run a single scenario

@@ -16,48 +16,65 @@ jobs:
       contents: write
       pull-requests: write
     env:
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      # Subscription auth via a `claude setup-token` OAuth token. The Claude CLI
+      # prefers ANTHROPIC_API_KEY over CLAUDE_CODE_OAUTH_TOKEN, so only expose
+      # the API key when no OAuth token is configured.
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      ANTHROPIC_API_KEY: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN == '' && secrets.ANTHROPIC_API_KEY || '' }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install system dependencies
+      # Skip evaluations gracefully when no Claude credentials are available
+      # (e.g. fork PRs, where secrets are not exposed) rather than failing.
+      - name: Check Claude credentials
+        id: credentials
         if: github.event.action != 'closed'
+        run: |
+          if [ -n "$CLAUDE_CODE_OAUTH_TOKEN" ] || [ -n "$ANTHROPIC_API_KEY" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping evaluations: no CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY secret available."
+          fi
+
+      - name: Install system dependencies
+        if: github.event.action != 'closed' && steps.credentials.outputs.available == 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y fonts-hack-ttf neovim
           fc-cache -fv
 
       - name: Setup Node.js
-        if: github.event.action != 'closed'
+        if: github.event.action != 'closed' && steps.credentials.outputs.available == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
 
       - name: Install Claude CLI
-        if: github.event.action != 'closed'
+        if: github.event.action != 'closed' && steps.credentials.outputs.available == 'true'
         run: npm install -g @anthropic-ai/claude-code
 
       - name: Install shellwright dependencies
-        if: github.event.action != 'closed'
+        if: github.event.action != 'closed' && steps.credentials.outputs.available == 'true'
         run: npm ci
 
       - name: Build shellwright
-        if: github.event.action != 'closed'
+        if: github.event.action != 'closed' && steps.credentials.outputs.available == 'true'
         run: npm run build
 
       - name: Install evaluation dependencies
-        if: github.event.action != 'closed'
+        if: github.event.action != 'closed' && steps.credentials.outputs.available == 'true'
         working-directory: evaluations
         run: npm install
 
       - name: Run evaluations
-        if: github.event.action != 'closed'
+        if: github.event.action != 'closed' && steps.credentials.outputs.available == 'true'
         working-directory: evaluations
         run: npm start
 
       - name: Generate comparison
-        if: github.event.action != 'closed'
+        if: github.event.action != 'closed' && steps.credentials.outputs.available == 'true'
         working-directory: evaluations
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
@@ -65,7 +82,7 @@ jobs:
         run: npm run compare
 
       - name: Deploy recordings to GitHub Pages
-        if: github.event.action != 'closed'
+        if: github.event.action != 'closed' && steps.credentials.outputs.available == 'true'
         uses: rossjrw/pr-preview-action@v1
         id: preview
         with:
@@ -86,7 +103,7 @@ jobs:
           comment: false
 
       - name: Comment with preview link
-        if: github.event.action != 'closed'
+        if: github.event.action != 'closed' && steps.credentials.outputs.available == 'true'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: recording-eval
@@ -96,7 +113,7 @@ jobs:
             **[View Recordings & Review](${{ steps.preview.outputs.preview-url }})**
 
       - name: Upload recordings
-        if: github.event.action != 'closed'
+        if: github.event.action != 'closed' && steps.credentials.outputs.available == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: recordings

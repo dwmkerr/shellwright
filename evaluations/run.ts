@@ -142,8 +142,9 @@ ${prompt}`,
 }
 
 async function main() {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.error("Error: ANTHROPIC_API_KEY environment variable required");
+  // The Claude Agent SDK accepts an API key or a `claude setup-token` OAuth token
+  if (!process.env.ANTHROPIC_API_KEY && !process.env.CLAUDE_CODE_OAUTH_TOKEN) {
+    console.error("Error: ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN environment variable required");
     process.exit(1);
   }
 
