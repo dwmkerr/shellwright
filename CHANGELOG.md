@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.12](https://github.com/dwmkerr/shellwright/compare/v0.1.11...v0.1.12) (2026-07-22)
+
+
+### Bug Fixes
+
+* add permissions block required by reusable workflow ([#76](https://github.com/dwmkerr/shellwright/issues/76)) ([6d5c8c7](https://github.com/dwmkerr/shellwright/commit/6d5c8c7033055144f8a60d9ab0dc45bdd34cd783))
+* reads go stale under high-throughput output (drain before serialize) ([#81](https://github.com/dwmkerr/shellwright/issues/81)) ([79704a3](https://github.com/dwmkerr/shellwright/commit/79704a38befde66c7dc8d7a50ff0f78d2d0ec261))
+
 ## [0.1.11](https://github.com/dwmkerr/shellwright/compare/v0.1.10...v0.1.11) (2026-03-10)
 
 
