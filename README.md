@@ -270,7 +270,7 @@ The response includes the terminal buffer before and after the input was sent:
 
 ### **shell_read**
 
-Read the current terminal buffer. Use `raw: true` to include ANSI escape codes:
+Read the terminal contents (scrollback and screen) as plain text. Use `raw: true` for the raw output stream with ANSI escape codes:
 
 ```json
 {

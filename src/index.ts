@@ -195,7 +195,7 @@ Tips:
 
   server.tool(
     "shell_read",
-    "Read the current terminal buffer as plain text (no ANSI codes)",
+    "Read the terminal contents (scrollback and screen) as plain text (no ANSI codes). Use raw: true for the raw output stream with ANSI codes.",
     shellReadSchema,
     async (params) => shellRead(params, toolContext)
   );

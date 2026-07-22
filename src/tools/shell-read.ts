@@ -1,26 +1,10 @@
 import { z } from "zod";
+import { bufferToFullText, drainTerminal } from "../lib/buffer-to-ansi.js";
 import { ToolContext } from "./types.js";
-
-// Basic ANSI stripping (incomplete - see 04-findings.md for why this is insufficient)
-function stripAnsi(str: string): string {
-  return str
-    // eslint-disable-next-line no-control-regex
-    .replace(/\x1b\[[0-9;?]*[a-zA-Z]/g, "")  // CSI sequences
-    // eslint-disable-next-line no-control-regex
-    .replace(/\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)/g, "")  // OSC sequences
-    // eslint-disable-next-line no-control-regex
-    .replace(/\x1b[PX^_][^\x1b]*\x1b\\/g, "")  // DCS/SOS/PM/APC
-    // eslint-disable-next-line no-control-regex, no-useless-escape
-    .replace(/\x1b[\(\)][AB0-2]/g, "")  // Character set selection
-    // eslint-disable-next-line no-control-regex
-    .replace(/\x1b[=>NOM78]/g, "")  // Other escape sequences
-    // eslint-disable-next-line no-control-regex
-    .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, "");  // Control chars
-}
 
 export const shellReadSchema = {
   session_id: z.string().describe("Session ID"),
-  raw: z.boolean().optional().describe("Return raw ANSI codes (default: false)"),
+  raw: z.boolean().optional().describe("Return the raw output stream with ANSI codes instead of the parsed terminal contents (default: false)"),
 };
 
 export async function shellRead(
@@ -33,9 +17,14 @@ export async function shellRead(
     throw new Error(`Session not found: ${session_id}`);
   }
 
-  let content = session.buffer.join("");
-  if (!raw) {
-    content = stripAnsi(content);
+  let content: string;
+  if (raw) {
+    content = session.buffer.join("");
+  } else {
+    // Serialize the parsed terminal model (same source as shell_screenshot) so the
+    // two tools can never disagree; the raw chunk ring stays behind raw: true.
+    await drainTerminal(session.terminal);
+    content = bufferToFullText(session.terminal);
   }
 
   // Limit to last 8KB to avoid context overflow

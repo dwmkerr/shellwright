@@ -209,6 +209,26 @@ export function bufferToAnsi(
   return lines.join("\n");
 }
 
+// xterm's write() is asynchronous; the callback of a write fires only after all
+// previously queued data has been parsed, so an empty write is a drain barrier.
+export function drainTerminal(terminal: InstanceType<typeof Terminal>): Promise<void> {
+  return new Promise((resolve) => terminal.write("", () => resolve()));
+}
+
+// Serializes the entire parsed buffer (scrollback + viewport) so shell_read shares
+// a single source of truth with the screenshot/send capture paths.
+export function bufferToFullText(terminal: InstanceType<typeof Terminal>): string {
+  const buffer = terminal.buffer.active;
+  const lines: string[] = [];
+
+  for (let y = 0; y < buffer.length; y++) {
+    const line = buffer.getLine(y);
+    lines.push(line ? line.translateToString(true).trimEnd() : "");
+  }
+
+  return lines.join("\n").trimEnd();
+}
+
 export function bufferToText(
   terminal: InstanceType<typeof Terminal>,
   cols: number,
