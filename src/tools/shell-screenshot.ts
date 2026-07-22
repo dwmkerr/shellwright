@@ -3,7 +3,7 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import { Resvg } from "@resvg/resvg-js";
 import { bufferToSvg } from "../lib/buffer-to-svg.js";
-import { bufferToAnsi, bufferToText } from "../lib/buffer-to-ansi.js";
+import { bufferToAnsi, bufferToText, drainTerminal } from "../lib/buffer-to-ansi.js";
 import { ToolContext } from "./types.js";
 
 export const shellScreenshotSchema = {
@@ -32,7 +32,8 @@ export async function shellScreenshot(
 
   await fs.mkdir(screenshotDir, { recursive: true });
 
-  // Generate all formats from xterm buffer
+  // Generate all formats from xterm buffer, after it has parsed all pending output
+  await drainTerminal(session.terminal);
   const svg = bufferToSvg(session.terminal, session.cols, session.rows, {
     theme: session.theme,
     fontSize: context.config.FONT_SIZE,

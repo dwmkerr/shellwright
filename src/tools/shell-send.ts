@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { bufferToText } from "../lib/buffer-to-ansi.js";
+import { bufferToText, drainTerminal } from "../lib/buffer-to-ansi.js";
 import { ToolContext } from "./types.js";
 
 // Interpret escape sequences in input strings (e.g., \r → carriage return)
@@ -29,6 +29,8 @@ export async function shellSend(
     throw new Error(`Session not found: ${session_id}`);
   }
 
+  // Drain xterm's async parse queue before each capture so both reflect the live screen
+  await drainTerminal(session.terminal);
   const bufferBefore = bufferToText(session.terminal, session.cols, session.rows);
 
   const interpreted = interpretEscapes(input);
@@ -37,6 +39,7 @@ export async function shellSend(
 
   await new Promise((resolve) => setTimeout(resolve, delay_ms || 100));
 
+  await drainTerminal(session.terminal);
   const bufferAfter = bufferToText(session.terminal, session.cols, session.rows);
 
   const output = { success: true, bufferBefore, bufferAfter };
