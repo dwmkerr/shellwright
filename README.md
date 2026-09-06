@@ -25,6 +25,7 @@
     <a href="https://github.com/dwmkerr/shellwright/actions/workflows/cicd.yaml"><img src="https://github.com/dwmkerr/shellwright/actions/workflows/cicd.yaml/badge.svg" alt="cicd"></a>
     <a href="https://www.npmjs.com/package/@dwmkerr/shellwright"><img src="https://img.shields.io/npm/v/@dwmkerr/shellwright" alt="npm version"></a>
     <a href="#contributors"><img src="https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square" alt="All Contributors"></a>
+    <a href="https://github.com/sponsors/dwmkerr?frequency=one-time"><img src="https://img.shields.io/badge/thanks-buy%20me%20a%20coffee-ea4aaa?logo=githubsponsors&logoColor=white" alt="Buy me a coffee"></a>
   </p>
   <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
