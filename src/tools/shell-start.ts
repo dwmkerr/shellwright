@@ -93,6 +93,17 @@ export async function shellStart(
     terminal.write(data);
   });
 
+  // xterm answers terminal queries (cursor position, device attributes, mode
+  // reports) through onData. Programs such as Neovim wait for those answers,
+  // so they go back to the PTY as a real terminal would send them.
+  terminal.onData((data) => {
+    try {
+      ptyProcess.write(data);
+    } catch {
+      // The process has exited; there is nobody left to answer
+    }
+  });
+
   context.sessions.set(id, session);
   context.log(`[shellwright] Started session ${id}: ${command} (theme: ${sessionTheme.name})`);
 
