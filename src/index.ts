@@ -9,7 +9,7 @@ import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import * as fs from "fs/promises";
 import * as fsSync from "fs";
 import * as path from "path";
-import { Resvg, ResvgRenderOptions } from "@resvg/resvg-js";
+import { createPngRenderer } from "./lib/fonts.js";
 import { registerPrompts } from "./prompts.js";
 import {
   shellStart,
@@ -30,12 +30,6 @@ import {
   ToolContext,
 } from "./tools/index.js";
 
-// Use system fonts for proper text rendering (resvg ignores them by default).
-// Scale 2x for crisp output on retina displays.
-const resvgOptions: ResvgRenderOptions = {
-  font: { loadSystemFonts: true },
-  fitTo: { mode: "zoom", value: 2 },
-};
 import { Command } from "commander";
 import { getTheme, themes, DEFAULT_THEME } from "./lib/themes.js";
 
@@ -107,6 +101,8 @@ try {
   process.exit(1);
 }
 
+const renderPng = createPngRenderer(FONT_FAMILY, log);
+
 const sessions = new Map<string, Session>();
 const transports: { [sessionId: string]: StreamableHTTPServerTransport } = {};
 
@@ -170,7 +166,7 @@ const createServer = (getMcpSessionId: () => string | undefined) => {
       COLS,
       ROWS,
     },
-    resvgOptions,
+    renderPng,
   };
 
   server.tool(

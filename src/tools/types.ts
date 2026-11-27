@@ -9,6 +9,7 @@ export interface RecordingState {
   interval: ReturnType<typeof setInterval>;
   fps: number;
   border?: { style: string; title?: string };
+  lastFrame?: { svg: string; png: Buffer };
 }
 
 export interface Session {
@@ -22,7 +23,7 @@ export interface Session {
   recording?: RecordingState;
 }
 
-import { ResvgRenderOptions } from "@resvg/resvg-js";
+import type { PngRenderer } from "../lib/fonts.js";
 
 export interface ToolContext {
   sessions: Map<string, Session>;
@@ -38,5 +39,5 @@ export interface ToolContext {
     COLS: number;
     ROWS: number;
   };
-  resvgOptions: ResvgRenderOptions;
+  renderPng: PngRenderer;
 }

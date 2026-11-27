@@ -1,7 +1,6 @@
 import { z } from "zod";
 import * as fs from "fs/promises";
 import * as path from "path";
-import { Resvg } from "@resvg/resvg-js";
 import { bufferToSvg } from "../lib/buffer-to-svg.js";
 import { bufferToAnsi, bufferToText, drainTerminal } from "../lib/buffer-to-ansi.js";
 import { ToolContext } from "./types.js";
@@ -40,7 +39,7 @@ export async function shellScreenshot(
     fontFamily: context.config.FONT_FAMILY,
     border,
   });
-  const png = new Resvg(svg, context.resvgOptions).render().asPng();
+  const png = context.renderPng(svg);
   const ansi = bufferToAnsi(session.terminal, session.cols, session.rows, { theme: session.theme });
   const text = bufferToText(session.terminal, session.cols, session.rows);
 
