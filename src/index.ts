@@ -9,7 +9,7 @@ import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import * as fs from "fs/promises";
 import * as fsSync from "fs";
 import * as path from "path";
-import { Resvg, ResvgRenderOptions } from "@resvg/resvg-js";
+import { createPngRenderer } from "./lib/fonts.js";
 import { registerPrompts } from "./prompts.js";
 import {
   shellStart,
@@ -30,12 +30,6 @@ import {
   ToolContext,
 } from "./tools/index.js";
 
-// Use system fonts for proper text rendering (resvg ignores them by default).
-// Scale 2x for crisp output on retina displays.
-const resvgOptions: ResvgRenderOptions = {
-  font: { loadSystemFonts: true },
-  fitTo: { mode: "zoom", value: 2 },
-};
 import { Command } from "commander";
 import { getTheme, themes, DEFAULT_THEME } from "./lib/themes.js";
 
@@ -107,6 +101,17 @@ try {
   process.exit(1);
 }
 
+const renderPng = createPngRenderer(FONT_FAMILY, log);
+
+// Express 5 hands a listen error such as EADDRINUSE to the callback instead of
+// throwing, so without this check the "running" banner prints and the process
+// exits quietly with code 0.
+function listenFailure(err: NodeJS.ErrnoException): string {
+  return err.code === "EADDRINUSE"
+    ? `Port ${PORT} is already in use, perhaps by another shellwright. Choose another with --port.`
+    : `Could not listen on port ${PORT}: ${err.message}`;
+}
+
 const sessions = new Map<string, Session>();
 const transports: { [sessionId: string]: StreamableHTTPServerTransport } = {};
 
@@ -170,7 +175,7 @@ const createServer = (getMcpSessionId: () => string | undefined) => {
       COLS,
       ROWS,
     },
-    resvgOptions,
+    renderPng,
   };
 
   server.tool(
@@ -318,7 +323,11 @@ if (USE_HTTP) {
     await transport.handleRequest(req, res);
   });
 
-  app.listen(PORT, () => {
+  app.listen(PORT, (err?: NodeJS.ErrnoException) => {
+    if (err) {
+      console.error(`[shellwright] ${listenFailure(err)}`);
+      process.exit(1);
+    }
     log(`[shellwright] MCP server running at http://localhost:${PORT}/mcp`);
     log(`[shellwright] File server running at http://localhost:${PORT}/files`);
   });
@@ -338,7 +347,13 @@ if (USE_HTTP) {
 
   // Start HTTP file server (needed for download URLs)
   const fileServer = createFileServer();
-  fileServer.listen(PORT, () => {
+  fileServer.listen(PORT, (err?: NodeJS.ErrnoException) => {
+    // MCP over stdio still works without the file server, so warn rather than
+    // exit; download URLs will point at whatever owns the port
+    if (err) {
+      log(`[shellwright] WARNING: ${listenFailure(err)} Download URLs will not work.`);
+      return;
+    }
     log(`[shellwright] File server running at http://localhost:${PORT}/files`);
   });
 

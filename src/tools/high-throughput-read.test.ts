@@ -20,7 +20,7 @@ function createToolContext(): ToolContext {
       COLS: 80,
       ROWS: 24,
     },
-    resvgOptions: {},
+    renderPng: () => Buffer.alloc(0),
   };
 }
 

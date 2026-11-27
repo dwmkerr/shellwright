@@ -1,7 +1,6 @@
 import { z } from "zod";
 import * as fs from "fs/promises";
 import * as path from "path";
-import { Resvg } from "@resvg/resvg-js";
 import { bufferToSvg } from "../lib/buffer-to-svg.js";
 import { drainTerminal } from "../lib/buffer-to-ansi.js";
 import { ToolContext } from "./types.js";
@@ -60,7 +59,10 @@ export async function shellRecordStart(
           fontFamily: context.config.FONT_FAMILY,
           border,
         });
-        const png = new Resvg(svg, context.resvgOptions).render().asPng();
+        // An idle screen gives the same SVG frame after frame; reuse its PNG
+        // rather than render it again, and the GIF encoder merges the repeats
+        const png = recording.lastFrame?.svg === svg ? recording.lastFrame.png : context.renderPng(svg);
+        recording.lastFrame = { svg, png };
         const framePath = path.join(framesDir, `frame${String(frameNum).padStart(6, "0")}.png`);
         await fs.writeFile(framePath, png);
       } finally {
